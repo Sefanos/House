@@ -1,0 +1,4 @@
+{
+  "module-path": "./apps/spacetime",
+  "server": "http://localhost:3000"
+}

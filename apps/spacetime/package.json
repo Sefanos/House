@@ -1,0 +1,25 @@
+{
+  "name": "@houseplan/spacetime",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "spacetime build --module-path .",
+    "lint": "echo \"lint placeholder for bootstrap\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "echo \"No tests yet\"",
+    "spacetime:publish": "spacetime publish houseplan --server http://localhost:3000 --module-path . --yes",
+    "spacetime:generate": "spacetime generate --lang typescript --out-dir ../../packages/spacetime-client/src/generated --module-path . --yes"
+  },
+  "dependencies": {
+    "@houseplan/types": "workspace:*",
+    "bcryptjs": "^2.4.3",
+    "spacetimedb": "^2.0.3",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20.17.0",
+    "typescript": "^5.8.2"
+  }
+}

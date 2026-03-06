@@ -1,0 +1,27 @@
+{
+  "name": "@houseplan/spacetime-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "echo \"lint placeholder for bootstrap\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "echo \"No tests yet\""
+  },
+  "dependencies": {
+    "@houseplan/types": "workspace:*",
+    "spacetimedb": "^2.0.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  }
+}

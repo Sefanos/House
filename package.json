@@ -1,0 +1,22 @@
+{
+  "name": "houseplan",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.15.2",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "spacetime:publish": "pnpm --filter @houseplan/spacetime spacetime:publish",
+    "spacetime:generate": "pnpm --filter @houseplan/spacetime spacetime:generate"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.0",
+    "eslint": "^9.22.0",
+    "prettier": "^3.5.3",
+    "turbo": "^2.4.4",
+    "typescript": "^5.8.2"
+  }
+}

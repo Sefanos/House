@@ -1,0 +1,27 @@
+services:
+  spacetimedb:
+    image: clockworklabs/spacetime:latest
+    container_name: houseplan-spacetimedb
+    command: ["start", "--listen-addr", "0.0.0.0:3000", "--in-memory", "--non-interactive"]
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: houseplan-redis
+    restart: unless-stopped
+
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: houseplan-livekit
+    command: --config /etc/livekit/livekit.yaml --dev
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "7882:7882/udp"
+    volumes:
+      - ./infra/livekit/livekit.yaml:/etc/livekit/livekit.yaml:ro
+    depends_on:
+      - redis
+    restart: unless-stopped
