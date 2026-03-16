@@ -320,10 +320,10 @@ export default function HouseLayout({ children, params }: HouseLayoutProps) {
   const activeMenuSections = menuState?.kind === "house" ? houseMenuSections : roomMenuSections;
 
   return (
-    <section className="grid min-h-[calc(100vh-2rem)] grid-cols-1 gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
-      <aside className="flex min-h-[calc(100vh-2rem)] flex-col rounded-3xl border border-slate-800 bg-slate-950/60 p-4 lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)]">
+    <section className="grid min-h-[calc(100vh-2rem)] grid-cols-1 gap-3 lg:grid-cols-[292px_minmax(0,1fr)]">
+      <aside className="flex min-h-[calc(100vh-2rem)] flex-col overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/60 p-3 lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)]">
         <div
-          className="rounded-3xl border border-slate-800 bg-slate-900/75 p-4"
+          className="rounded-3xl border border-slate-800 bg-slate-900/75 p-3.5"
           onContextMenu={(event) => {
             event.preventDefault();
             setMenuState({ kind: "house", x: event.clientX, y: event.clientY });
@@ -352,7 +352,7 @@ export default function HouseLayout({ children, params }: HouseLayoutProps) {
             </button>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap gap-2">
             {access.canCreateRooms ? (
               <button
                 type="button"
@@ -374,7 +374,7 @@ export default function HouseLayout({ children, params }: HouseLayoutProps) {
         </div>
 
         {showCreateRoom && access.canCreateRooms ? (
-          <form onSubmit={onCreateRoom} className="mt-4 space-y-3 rounded-3xl border border-slate-800 bg-slate-900/70 p-4">
+          <form onSubmit={onCreateRoom} className="mt-3 space-y-3 rounded-3xl border border-slate-800 bg-slate-900/70 p-3.5">
             <div>
               <h2 className="text-sm font-semibold text-slate-100">Create room</h2>
               <p className="mt-1 text-xs text-slate-400">Text rooms for chat, voice rooms for live calls.</p>
@@ -412,144 +412,146 @@ export default function HouseLayout({ children, params }: HouseLayoutProps) {
         ) : null}
 
         {sidebarStatus ? (
-          <p className="mt-4 rounded-2xl border border-emerald-700/50 bg-emerald-950/30 px-3 py-2 text-sm text-emerald-200">
+          <p className="mt-3 rounded-2xl border border-emerald-700/50 bg-emerald-950/30 px-3 py-2 text-sm text-emerald-200">
             {sidebarStatus}
           </p>
         ) : null}
         {createError ? (
-          <p className="mt-4 rounded-2xl border border-rose-700/50 bg-rose-950/30 px-3 py-2 text-sm text-rose-200">
+          <p className="mt-3 rounded-2xl border border-rose-700/50 bg-rose-950/30 px-3 py-2 text-sm text-rose-200">
             {createError}
           </p>
         ) : null}
 
-        <div className="mt-4 min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
-          <section className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Text Rooms</h2>
-              <span className="text-xs text-slate-500">{groupedRooms.chat.length}</span>
-            </div>
-            {isLoading ? <p className="text-xs text-slate-400">Loading rooms...</p> : null}
-            {!isLoading && !error && groupedRooms.chat.length === 0 ? (
-              <p className="text-xs text-slate-500">No text rooms yet.</p>
-            ) : null}
-            <ul className="space-y-1.5">
-              {groupedRooms.chat.map((room) => {
-                const isActive = room.id === activeRoomId;
-                const occupancy = roomOccupancy.get(room.id) ?? 0;
-                return (
-                  <li key={room.id}>
-                    <div
-                      className={`group flex items-center gap-2 rounded-2xl border px-2 py-1.5 transition ${
-                        isActive
-                          ? "border-sky-400/50 bg-sky-500/12 text-sky-100"
-                          : "border-slate-800 bg-slate-950/70 text-slate-200 hover:bg-slate-900"
-                      }`}
-                      onContextMenu={(event) => {
-                        event.preventDefault();
-                        setMenuState({ kind: "room", roomId: room.id, x: event.clientX, y: event.clientY });
-                      }}
-                    >
-                      <Link
-                        href={`/houses/${params.houseId}/rooms/${room.id}`}
-                        className="flex min-w-0 flex-1 items-center gap-2 rounded-xl px-1 py-1"
-                      >
-                        <span className={isActive ? "text-sky-200" : "text-slate-500"}>
-                          <RoomGlyph type={room.type} />
-                        </span>
-                        <span className="truncate text-sm font-medium">{room.name}</span>
-                      </Link>
-                      {occupancy > 0 ? (
-                        <span
-                          className="inline-flex items-center gap-1 rounded-full bg-emerald-500/12 px-2 py-0.5 text-[11px] font-semibold text-emerald-200"
-                          title={`${occupancy} member${occupancy === 1 ? "" : "s"} currently in this room`}
-                        >
-                          <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                          {occupancy}
-                        </span>
-                      ) : null}
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          const rect = event.currentTarget.getBoundingClientRect();
-                          setMenuState({ kind: "room", roomId: room.id, x: rect.right - 8, y: rect.bottom + 8 });
+        <div className="mt-3 min-h-0 flex-1 overflow-y-auto pr-1">
+          <div className="space-y-4">
+            <section className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Text Rooms</h2>
+                <span className="text-xs text-slate-500">{groupedRooms.chat.length}</span>
+              </div>
+              {isLoading ? <p className="text-xs text-slate-400">Loading rooms...</p> : null}
+              {!isLoading && !error && groupedRooms.chat.length === 0 ? (
+                <p className="text-xs text-slate-500">No text rooms yet.</p>
+              ) : null}
+              <ul className="space-y-1.5">
+                {groupedRooms.chat.map((room) => {
+                  const isActive = room.id === activeRoomId;
+                  const occupancy = roomOccupancy.get(room.id) ?? 0;
+                  return (
+                    <li key={room.id}>
+                      <div
+                        className={`group flex items-center gap-2 rounded-2xl border px-2 py-1.5 transition ${
+                          isActive
+                            ? "border-sky-400/50 bg-sky-500/12 text-sky-100"
+                            : "border-slate-800 bg-slate-950/70 text-slate-200 hover:bg-slate-900"
+                        }`}
+                        onContextMenu={(event) => {
+                          event.preventDefault();
+                          setMenuState({ kind: "room", roomId: room.id, x: event.clientX, y: event.clientY });
                         }}
-                        className="grid h-8 w-8 shrink-0 place-items-center rounded-xl text-slate-500 transition hover:bg-slate-800 hover:text-slate-200"
-                        aria-label={`Open actions for ${room.name}`}
                       >
-                        <KebabIcon />
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-
-          <section className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Voice Rooms</h2>
-              <span className="text-xs text-slate-500">{groupedRooms.voice.length}</span>
-            </div>
-            {!isLoading && !error && groupedRooms.voice.length === 0 ? (
-              <p className="text-xs text-slate-500">No voice rooms yet.</p>
-            ) : null}
-            <ul className="space-y-1.5">
-              {groupedRooms.voice.map((room) => {
-                const isActive = room.id === activeRoomId;
-                const occupancy = roomOccupancy.get(room.id) ?? 0;
-                return (
-                  <li key={room.id}>
-                    <div
-                      className={`group flex items-center gap-2 rounded-2xl border px-2 py-1.5 transition ${
-                        isActive
-                          ? "border-emerald-400/50 bg-emerald-500/12 text-emerald-100"
-                          : "border-slate-800 bg-slate-950/70 text-slate-200 hover:bg-slate-900"
-                      }`}
-                      onContextMenu={(event) => {
-                        event.preventDefault();
-                        setMenuState({ kind: "room", roomId: room.id, x: event.clientX, y: event.clientY });
-                      }}
-                    >
-                      <Link
-                        href={`/houses/${params.houseId}/rooms/${room.id}`}
-                        className="flex min-w-0 flex-1 items-center gap-2 rounded-xl px-1 py-1"
-                      >
-                        <span className={isActive ? "text-emerald-200" : "text-slate-500"}>
-                          <RoomGlyph type={room.type} />
-                        </span>
-                        <span className="truncate text-sm font-medium">{room.name}</span>
-                      </Link>
-                      {occupancy > 0 ? (
-                        <span
-                          className="inline-flex items-center gap-1 rounded-full bg-emerald-500/12 px-2 py-0.5 text-[11px] font-semibold text-emerald-200"
-                          title={`${occupancy} member${occupancy === 1 ? "" : "s"} currently in this room`}
+                        <Link
+                          href={`/houses/${params.houseId}/rooms/${room.id}`}
+                          className="flex min-w-0 flex-1 items-center gap-2 rounded-xl px-1 py-1"
                         >
-                          <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                          {occupancy}
-                        </span>
-                      ) : null}
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          const rect = event.currentTarget.getBoundingClientRect();
-                          setMenuState({ kind: "room", roomId: room.id, x: rect.right - 8, y: rect.bottom + 8 });
-                        }}
-                        className="grid h-8 w-8 shrink-0 place-items-center rounded-xl text-slate-500 transition hover:bg-slate-800 hover:text-slate-200"
-                        aria-label={`Open actions for ${room.name}`}
-                      >
-                        <KebabIcon />
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
+                          <span className={isActive ? "text-sky-200" : "text-slate-500"}>
+                            <RoomGlyph type={room.type} />
+                          </span>
+                          <span className="truncate text-sm font-medium">{room.name}</span>
+                        </Link>
+                        {occupancy > 0 ? (
+                          <span
+                            className="inline-flex items-center gap-1 rounded-full bg-emerald-500/12 px-2 py-0.5 text-[11px] font-semibold text-emerald-200"
+                            title={`${occupancy} member${occupancy === 1 ? "" : "s"} currently in this room`}
+                          >
+                            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                            {occupancy}
+                          </span>
+                        ) : null}
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            const rect = event.currentTarget.getBoundingClientRect();
+                            setMenuState({ kind: "room", roomId: room.id, x: rect.right - 8, y: rect.bottom + 8 });
+                          }}
+                          className="grid h-8 w-8 shrink-0 place-items-center rounded-xl text-slate-500 transition hover:bg-slate-800 hover:text-slate-200"
+                          aria-label={`Open actions for ${room.name}`}
+                        >
+                          <KebabIcon />
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
 
-          {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+            <section className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Voice Rooms</h2>
+                <span className="text-xs text-slate-500">{groupedRooms.voice.length}</span>
+              </div>
+              {!isLoading && !error && groupedRooms.voice.length === 0 ? (
+                <p className="text-xs text-slate-500">No voice rooms yet.</p>
+              ) : null}
+              <ul className="space-y-1.5">
+                {groupedRooms.voice.map((room) => {
+                  const isActive = room.id === activeRoomId;
+                  const occupancy = roomOccupancy.get(room.id) ?? 0;
+                  return (
+                    <li key={room.id}>
+                      <div
+                        className={`group flex items-center gap-2 rounded-2xl border px-2 py-1.5 transition ${
+                          isActive
+                            ? "border-emerald-400/50 bg-emerald-500/12 text-emerald-100"
+                            : "border-slate-800 bg-slate-950/70 text-slate-200 hover:bg-slate-900"
+                        }`}
+                        onContextMenu={(event) => {
+                          event.preventDefault();
+                          setMenuState({ kind: "room", roomId: room.id, x: event.clientX, y: event.clientY });
+                        }}
+                      >
+                        <Link
+                          href={`/houses/${params.houseId}/rooms/${room.id}`}
+                          className="flex min-w-0 flex-1 items-center gap-2 rounded-xl px-1 py-1"
+                        >
+                          <span className={isActive ? "text-emerald-200" : "text-slate-500"}>
+                            <RoomGlyph type={room.type} />
+                          </span>
+                          <span className="truncate text-sm font-medium">{room.name}</span>
+                        </Link>
+                        {occupancy > 0 ? (
+                          <span
+                            className="inline-flex items-center gap-1 rounded-full bg-emerald-500/12 px-2 py-0.5 text-[11px] font-semibold text-emerald-200"
+                            title={`${occupancy} member${occupancy === 1 ? "" : "s"} currently in this room`}
+                          >
+                            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                            {occupancy}
+                          </span>
+                        ) : null}
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            const rect = event.currentTarget.getBoundingClientRect();
+                            setMenuState({ kind: "room", roomId: room.id, x: rect.right - 8, y: rect.bottom + 8 });
+                          }}
+                          className="grid h-8 w-8 shrink-0 place-items-center rounded-xl text-slate-500 transition hover:bg-slate-800 hover:text-slate-200"
+                          aria-label={`Open actions for ${room.name}`}
+                        >
+                          <KebabIcon />
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+
+            {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+          </div>
         </div>
 
-        <div className="mt-4 pt-2">
+        <div className="mt-3 pt-1">
           {currentUser ? (
             <CurrentUserCard
               username={currentUser.username}
@@ -569,7 +571,7 @@ export default function HouseLayout({ children, params }: HouseLayoutProps) {
         </div>
       </aside>
 
-      <section className="min-w-0 rounded-3xl border border-slate-800 bg-slate-900/60 p-4">
+      <section className="min-w-0 rounded-3xl border border-slate-800 bg-slate-900/60 p-3">
         {children}
       </section>
 

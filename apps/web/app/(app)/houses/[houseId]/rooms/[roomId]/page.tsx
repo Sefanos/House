@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type CSSProperties, type PointerEvent as ReactPointerEvent, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getFrequentEmojis, readEmojiUsage, rememberEmojiUsage, type EmojiUsageMap } from "@/components/dms/emojiHistory";
 import { MessageList } from "@/components/chat/MessageList";
 import { RoomComposer } from "@/components/chat/RoomComposer";
@@ -28,6 +28,8 @@ type RoomPageProps = {
     roomId: string;
   };
 };
+
+const MIN_CHAT_SIDEBAR_WIDTH = 260;
 
 function RoomSettingsIcon() {
   return (
@@ -135,6 +137,7 @@ function matchesConfirmedMessage(optimisticMessage: RoomRenderableMessage, messa
 export default function RoomPage({ params }: RoomPageProps) {
   const router = useRouter();
   const messageScrollRef = useRef<HTMLDivElement | null>(null);
+  const resizeSessionRef = useRef<{ startWidth: number; startX: number } | null>(null);
   const { currentUser } = useCurrentUser();
   const { rooms, isLoading, error } = useRooms(params.houseId);
   const { users } = useUsers();
@@ -172,7 +175,9 @@ export default function RoomPage({ params }: RoomPageProps) {
   const [roomSettingsOpen, setRoomSettingsOpen] = useState(false);
   const [emojiUsage, setEmojiUsage] = useState<EmojiUsageMap>({});
   const isRightSidebarOpen = useCustomizationStore((state) => state.chatSidebarOpen);
+  const chatSidebarWidth = useCustomizationStore((state) => state.chatSidebarWidth);
   const toggleRightSidebar = useCustomizationStore((state) => state.toggleChatSidebarOpen);
+  const setChatSidebarWidth = useCustomizationStore((state) => state.setChatSidebarWidth);
   const isSendingMessage = pendingSendCount > 0;
 
   const access = useMemo(() => resolveHouseAccess({ hasPermission, isOwner }), [hasPermission, isOwner]);
@@ -216,6 +221,49 @@ export default function RoomPage({ params }: RoomPageProps) {
     setOptimisticMessages([]);
     setPendingSendCount(0);
   }, [room?.id]);
+
+  useEffect(() => {
+    function handlePointerMove(event: PointerEvent) {
+      if (!resizeSessionRef.current || typeof window === "undefined") {
+        return;
+      }
+
+      const maxWidth = Math.min(560, Math.max(MIN_CHAT_SIDEBAR_WIDTH, window.innerWidth - 420));
+      const nextHeight = Math.min(
+        maxWidth,
+        Math.max(MIN_CHAT_SIDEBAR_WIDTH, resizeSessionRef.current.startWidth - (event.clientX - resizeSessionRef.current.startX))
+      );
+      setChatSidebarWidth(nextHeight);
+    }
+
+    function stopResize() {
+      resizeSessionRef.current = null;
+      document.body.style.removeProperty("cursor");
+      document.body.style.removeProperty("user-select");
+    }
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", stopResize);
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", stopResize);
+    };
+  }, [setChatSidebarWidth]);
+
+  useEffect(() => {
+    function clampToViewport() {
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      const maxWidth = Math.min(560, Math.max(MIN_CHAT_SIDEBAR_WIDTH, window.innerWidth - 420));
+      setChatSidebarWidth(Math.min(chatSidebarWidth, maxWidth));
+    }
+
+    clampToViewport();
+    window.addEventListener("resize", clampToViewport);
+    return () => window.removeEventListener("resize", clampToViewport);
+  }, [chatSidebarWidth, setChatSidebarWidth]);
 
   useEffect(() => {
     if (messages.length === 0) {
@@ -339,6 +387,15 @@ export default function RoomPage({ params }: RoomPageProps) {
 
   function rememberEmoji(emoji: string) {
     setEmojiUsage((current) => rememberEmojiUsage(currentUser?.id, current, emoji));
+  }
+
+  function startSidebarResize(event: ReactPointerEvent<HTMLButtonElement>) {
+    resizeSessionRef.current = {
+      startWidth: chatSidebarWidth,
+      startX: event.clientX
+    };
+    document.body.style.cursor = "ew-resize";
+    document.body.style.userSelect = "none";
   }
 
   const dismissToast = useCallback((toastId: string) => {
@@ -537,6 +594,9 @@ export default function RoomPage({ params }: RoomPageProps) {
 
   async function onDeleteRoom() {
     if (!room) return;
+    if (typeof window !== "undefined" && !window.confirm(`Delete #${room.name}? This can't be undone.`)) {
+      return;
+    }
     setIsDeletingRoom(true);
     try {
       await runToastMutation({
@@ -616,15 +676,21 @@ export default function RoomPage({ params }: RoomPageProps) {
     room.description?.trim() ||
     "A richer text room for live chat, quick reactions, and side threads.";
   const showRightSidebar = Boolean(parentMessage) || isRightSidebarOpen;
+  const chatLayoutStyle = showRightSidebar
+    ? ({ ["--chat-sidebar-width" as string]: `${chatSidebarWidth}px` } as CSSProperties)
+    : undefined;
 
   return (
     <section className="space-y-4">
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
 
       {isChatRoom ? (
-        <section className={`grid gap-4 ${showRightSidebar ? "xl:grid-cols-[minmax(0,1fr)_20rem]" : ""}`}>
+        <section
+          className={`grid gap-4 ${showRightSidebar ? "xl:grid-cols-[minmax(0,1fr)_0.875rem_var(--chat-sidebar-width)] xl:gap-2" : ""}`}
+          style={chatLayoutStyle}
+        >
           <div className="flex h-[calc(100vh-2.5rem)] min-h-[40rem] flex-col overflow-hidden rounded-[32px] border border-slate-800 bg-[linear-gradient(180deg,rgba(15,23,42,0.78),rgba(2,6,23,0.98))] shadow-2xl shadow-black/20">
-            <header className="border-b border-slate-800 bg-slate-950/70 px-5 py-4 backdrop-blur">
+            <header className="border-b border-slate-800 bg-slate-950/70 px-4 py-4 backdrop-blur">
               <div className="flex flex-wrap items-center gap-3">
                 <div className="grid h-11 w-11 shrink-0 place-items-center rounded-3xl border border-slate-800 bg-slate-900/80 text-lg font-semibold text-sky-300">
                   #
@@ -669,7 +735,7 @@ export default function RoomPage({ params }: RoomPageProps) {
               </div>
             </header>
 
-            <div ref={messageScrollRef} className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
+            <div ref={messageScrollRef} className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
               {isLoadingMessages ? <p className="text-sm text-slate-300">Loading messages...</p> : null}
               {messagesError ? <p className="text-sm text-rose-400">{messagesError}</p> : null}
 
@@ -689,7 +755,7 @@ export default function RoomPage({ params }: RoomPageProps) {
               ) : null}
             </div>
 
-            <div className="border-t border-slate-800/70 px-4 py-4">
+            <div className="border-t border-slate-800/70 px-3 py-3">
               <RoomComposer
                 roomLabel={room.name}
                 isSending={isSendingMessage}
@@ -701,7 +767,18 @@ export default function RoomPage({ params }: RoomPageProps) {
           </div>
 
           {showRightSidebar ? (
-            <div className="flex h-[calc(100vh-2.5rem)] min-h-[40rem] flex-col gap-4">
+            <>
+              <div className="hidden xl:flex h-[calc(100vh-2.5rem)] min-h-[40rem] items-center justify-center">
+                <button
+                  type="button"
+                  onPointerDown={startSidebarResize}
+                  className="group flex h-full w-3 cursor-col-resize items-center justify-center"
+                  aria-label="Resize sidebar width"
+                >
+                  <span className="h-24 w-1.5 rounded-full bg-slate-700 transition group-hover:bg-sky-300" />
+                </button>
+              </div>
+              <div className="flex h-[calc(100vh-2.5rem)] min-h-[40rem] flex-col gap-4">
               {parentMessage ? (
               <ThreadPanel
                 roomName={room.name}
@@ -721,13 +798,13 @@ export default function RoomPage({ params }: RoomPageProps) {
               />
               ) : (
                 <>
-                  <aside className="rounded-[32px] border border-slate-800 bg-[linear-gradient(180deg,rgba(15,23,42,0.72),rgba(2,6,23,0.96))] p-5">
+                  <aside className="rounded-[32px] border border-slate-800 bg-[linear-gradient(180deg,rgba(15,23,42,0.72),rgba(2,6,23,0.96))] p-4">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">About</p>
                     <h3 className="mt-2 text-lg font-semibold text-slate-100">#{room.name}</h3>
                     <p className="mt-2 text-sm leading-6 text-slate-400">{roomTopic}</p>
 
-                    <div className="mt-5 grid gap-3">
-                      <div className="rounded-[24px] border border-slate-800 bg-slate-950/70 px-4 py-3">
+                    <div className="mt-4 grid gap-2.5">
+                      <div className="rounded-[22px] border border-slate-800 bg-slate-950/70 px-3.5 py-3">
                         <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Room activity</p>
                         <div className="mt-3 grid grid-cols-2 gap-3 text-sm text-slate-300">
                           <div>
@@ -741,7 +818,7 @@ export default function RoomPage({ params }: RoomPageProps) {
                         </div>
                       </div>
 
-                      <div className="rounded-[24px] border border-slate-800 bg-slate-950/70 px-4 py-3">
+                      <div className="rounded-[22px] border border-slate-800 bg-slate-950/70 px-3.5 py-3">
                         <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Posting rules</p>
                         <p className="mt-3 text-sm text-slate-300">
                           Slowmode is set to <span className="font-semibold text-white">{room.slowmodeSeconds}s</span>.
@@ -752,7 +829,7 @@ export default function RoomPage({ params }: RoomPageProps) {
                   </aside>
 
                   <aside className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[32px] border border-slate-800 bg-[linear-gradient(180deg,rgba(15,23,42,0.72),rgba(2,6,23,0.96))]">
-                    <header className="border-b border-slate-800 px-5 py-4">
+                    <header className="border-b border-slate-800 px-4 py-4">
                       <div className="flex items-center justify-between gap-3">
                         <div>
                           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
@@ -766,11 +843,11 @@ export default function RoomPage({ params }: RoomPageProps) {
                       </div>
                     </header>
 
-                    <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+                    <div className="min-h-0 flex-1 overflow-y-auto px-3.5 py-3.5">
                       {roomMembersError ? <p className="text-sm text-rose-400">{roomMembersError}</p> : null}
 
                       {!roomMembersError && roomMembers.length === 0 ? (
-                        <div className="rounded-[24px] border border-dashed border-slate-700 bg-slate-950/40 p-5 text-sm text-slate-400">
+                        <div className="rounded-[22px] border border-dashed border-slate-700 bg-slate-950/40 p-4 text-sm text-slate-400">
                           Nobody else is actively viewing this room right now.
                         </div>
                       ) : null}
@@ -802,6 +879,7 @@ export default function RoomPage({ params }: RoomPageProps) {
                 </>
               )}
             </div>
+            </>
           ) : null}
         </section>
       ) : (

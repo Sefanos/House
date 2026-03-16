@@ -188,7 +188,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           })}
         </aside>
 
-        <section className="min-w-0 p-4 lg:p-6">{children}</section>
+        <section className="min-w-0 p-3 lg:p-4">{children}</section>
       </main>
     );
   }

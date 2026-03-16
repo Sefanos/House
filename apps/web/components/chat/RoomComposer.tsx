@@ -118,7 +118,7 @@ export function RoomComposer({
   return (
     <form
       onSubmit={onSubmit}
-      className="sticky bottom-0 z-10 rounded-[24px] border border-slate-800 bg-slate-950/95 p-2.5 shadow-2xl shadow-black/20 backdrop-blur"
+      className="sticky bottom-0 z-10 rounded-[22px] border border-slate-800 bg-slate-950/95 p-2 shadow-2xl shadow-black/20 backdrop-blur"
     >
       {threadLabel ? (
         <div className="mb-2.5 flex items-center justify-between gap-3 rounded-[20px] border border-sky-500/20 bg-sky-500/10 px-3 py-2.5">
@@ -179,12 +179,12 @@ export function RoomComposer({
             value={draft}
             onChange={(event) => setDraft(event.currentTarget.value)}
             onKeyDown={onKeyDown}
-            rows={2}
+            rows={1}
             maxLength={2000}
             placeholder={placeholder ?? `Message #${roomLabel}`}
-            className="min-h-[64px] w-full resize-none bg-transparent px-4 py-3 pb-14 pr-24 text-[15px] text-slate-100 outline-none placeholder:text-slate-400"
+            className="min-h-[50px] w-full resize-none bg-transparent px-3.5 py-2.5 pb-12 pr-24 text-sm text-slate-100 outline-none placeholder:text-slate-400"
           />
-          <div className="absolute bottom-3 left-3 flex items-center gap-2">
+          <div className="absolute bottom-2.5 left-2.5 flex items-center gap-2">
             <button
               type="button"
               onClick={() => {
@@ -192,7 +192,7 @@ export function RoomComposer({
                 setShowGifPicker(false);
               }}
               className={cn(
-                "inline-flex h-8 items-center gap-2 rounded-full border px-3 text-xs font-medium transition",
+                "inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[11px] font-medium transition",
                 showEmojiPicker
                   ? "border-sky-400/35 bg-sky-400/12 text-sky-100"
                   : "border-slate-700 bg-slate-900/90 text-slate-300 hover:bg-slate-800"
@@ -208,7 +208,7 @@ export function RoomComposer({
                 setShowEmojiPicker(false);
               }}
               className={cn(
-                "inline-flex h-8 items-center rounded-full border px-3 text-xs font-medium transition",
+                "inline-flex h-7 items-center rounded-full border px-2.5 text-[11px] font-medium transition",
                 showGifPicker
                   ? "border-sky-400/35 bg-sky-400/12 text-sky-100"
                   : "border-slate-700 bg-slate-900/90 text-slate-300 hover:bg-slate-800"
@@ -221,7 +221,7 @@ export function RoomComposer({
             type="submit"
             disabled={!canSend}
             aria-label={isSending ? "Sending message" : "Send message"}
-            className="absolute bottom-3 right-3 inline-flex h-9 min-w-9 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#38bdf8,#2563eb)] px-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:scale-[1.02] hover:shadow-sky-500/30 disabled:cursor-not-allowed disabled:scale-100 disabled:opacity-60"
+            className="absolute bottom-2.5 right-2.5 inline-flex h-8 min-w-8 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#38bdf8,#2563eb)] px-2.5 text-xs font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:scale-[1.02] hover:shadow-sky-500/30 disabled:cursor-not-allowed disabled:scale-100 disabled:opacity-60"
           >
             <span className="hidden pr-2 sm:inline">{isSending ? "..." : "Send"}</span>
             <SendIcon />

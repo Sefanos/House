@@ -79,7 +79,7 @@ export function MessageList({
 
   if (rootMessages.length === 0) {
     return (
-      <section className="grid gap-3 rounded-[28px] border border-dashed border-slate-700 bg-slate-950/40 p-8 text-center">
+      <section className="grid min-h-full place-content-center gap-3 rounded-[28px] border border-dashed border-slate-700 bg-slate-950/40 p-8 text-center">
         <div className="mx-auto grid h-16 w-16 place-items-center rounded-3xl border border-slate-800 bg-slate-900/70 text-3xl text-sky-300">
           #
         </div>
@@ -94,43 +94,45 @@ export function MessageList({
   }
 
   return (
-    <section className="space-y-4">
-      {entries.map((entry) => {
-        if (entry.kind === "divider") {
+    <section className="flex min-h-full flex-col justify-end">
+      <div className="space-y-4">
+        {entries.map((entry) => {
+          if (entry.kind === "divider") {
+            return (
+              <div key={entry.id} className="flex items-center gap-3 px-2">
+                <div className="h-px flex-1 bg-slate-800" />
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{entry.label}</p>
+                <div className="h-px flex-1 bg-slate-800" />
+              </div>
+            );
+          }
+
+          const message = entry.message;
+          const author = authorsById.get(message.authorId) ?? {
+            name: message.authorId,
+            username: message.authorId,
+            avatarUrl: "",
+            status: "offline" as const
+          };
+
           return (
-            <div key={entry.id} className="flex items-center gap-3 px-2">
-              <div className="h-px flex-1 bg-slate-800" />
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{entry.label}</p>
-              <div className="h-px flex-1 bg-slate-800" />
-            </div>
+            <RoomMessageBubble
+              key={entry.id}
+              message={message}
+              author={author}
+              currentUserId={currentUserId}
+              threadReplyCount={threadReplyCounts.get(message.id) ?? 0}
+              isBusy={isBusy}
+              quickReactionEmojis={quickReactionEmojis}
+              onRememberEmoji={onRememberEmoji}
+              onOpenThread={onOpenThread}
+              onEditMessage={onEditMessage}
+              onDeleteMessage={onDeleteMessage}
+              onToggleReaction={onToggleReaction}
+            />
           );
-        }
-
-        const message = entry.message;
-        const author = authorsById.get(message.authorId) ?? {
-          name: message.authorId,
-          username: message.authorId,
-          avatarUrl: "",
-          status: "offline" as const
-        };
-
-        return (
-          <RoomMessageBubble
-            key={entry.id}
-            message={message}
-            author={author}
-            currentUserId={currentUserId}
-            threadReplyCount={threadReplyCounts.get(message.id) ?? 0}
-            isBusy={isBusy}
-            quickReactionEmojis={quickReactionEmojis}
-            onRememberEmoji={onRememberEmoji}
-            onOpenThread={onOpenThread}
-            onEditMessage={onEditMessage}
-            onDeleteMessage={onDeleteMessage}
-            onToggleReaction={onToggleReaction}
-          />
-        );
-      })}
+        })}
+      </div>
     </section>
   );
 }

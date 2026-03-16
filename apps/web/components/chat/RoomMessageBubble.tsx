@@ -200,6 +200,9 @@ export function RoomMessageBubble({
 
   async function handleDelete() {
     setLocalError(null);
+    if (typeof window !== "undefined" && !window.confirm("Delete this message? This can't be undone.")) {
+      return;
+    }
     try {
       await onDeleteMessage(message.id);
     } catch (error) {
