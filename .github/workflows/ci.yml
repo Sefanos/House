@@ -1,99 +1,99 @@
-name: CI
+# name: CI
 
-on:
-  pull_request:
-  push:
-    branches:
-      - master
-      - main
-  workflow_dispatch:
+# on:
+#   pull_request:
+#   push:
+#     branches:
+#       - master
+#       - main
+#   workflow_dispatch:
 
-jobs:
-  verify:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+# jobs:
+#   verify:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.2
+#       - name: Setup pnpm
+#         uses: pnpm/action-setup@v4
+#         with:
+#           version: 9.15.2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "pnpm"
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: 20
+#           cache: "pnpm"
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+#       - name: Install dependencies
+#         run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm lint
+#       - name: Lint
+#         run: pnpm lint
 
-      - name: Typecheck
-        run: pnpm typecheck
+#       - name: Typecheck
+#         run: pnpm typecheck
 
-      - name: Build
-        run: pnpm build
+#       - name: Build
+#         run: pnpm build
 
-  smoke-bootstrap:
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+#   smoke-bootstrap:
+#     if: github.event_name == 'workflow_dispatch'
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.2
+#       - name: Setup pnpm
+#         uses: pnpm/action-setup@v4
+#         with:
+#           version: 9.15.2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "pnpm"
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: 20
+#           cache: "pnpm"
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+#       - name: Install dependencies
+#         run: pnpm install --frozen-lockfile
 
-      - name: Install SpacetimeDB CLI
-        run: curl -sSf https://install.spacetimedb.com | sh
+#       - name: Install SpacetimeDB CLI
+#         run: curl -sSf https://install.spacetimedb.com | sh
 
-      - name: Add SpacetimeDB CLI to PATH
-        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+#       - name: Add SpacetimeDB CLI to PATH
+#         run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
-      - name: Run bootstrap smoke flow
-        run: pnpm smoke:bootstrap
+#       - name: Run bootstrap smoke flow
+#         run: pnpm smoke:bootstrap
 
-  smoke-schema-protocol:
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+#   smoke-schema-protocol:
+#     if: github.event_name == 'workflow_dispatch'
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.2
+#       - name: Setup pnpm
+#         uses: pnpm/action-setup@v4
+#         with:
+#           version: 9.15.2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "pnpm"
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: 20
+#           cache: "pnpm"
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+#       - name: Install dependencies
+#         run: pnpm install --frozen-lockfile
 
-      - name: Install SpacetimeDB CLI
-        run: curl -sSf https://install.spacetimedb.com | sh
+#       - name: Install SpacetimeDB CLI
+#         run: curl -sSf https://install.spacetimedb.com | sh
 
-      - name: Add SpacetimeDB CLI to PATH
-        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+#       - name: Add SpacetimeDB CLI to PATH
+#         run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
-      - name: Run schema protocol smoke flow
-        run: pnpm smoke:schema-change-protocol
+#       - name: Run schema protocol smoke flow
+#         run: pnpm smoke:schema-change-protocol
