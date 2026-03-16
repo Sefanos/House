@@ -34,18 +34,101 @@ import {
 } from "spacetimedb";
 
 // Import all reducer arg schemas
+import AuthAssertSessionReducer from "./auth_assert_session_reducer";
 import AuthLoginReducer from "./auth_login_reducer";
+import AuthLogoutReducer from "./auth_logout_reducer";
 import AuthRegisterReducer from "./auth_register_reducer";
+import BadgesGrantBadgeReducer from "./badges_grant_badge_reducer";
+import BadgesRevokeBadgeReducer from "./badges_revoke_badge_reducer";
+import DmsDeleteDmReducer from "./dms_delete_dm_reducer";
+import DmsEditDmReducer from "./dms_edit_dm_reducer";
+import DmsSendDmReducer from "./dms_send_dm_reducer";
+import HouseBanMemberReducer from "./house_ban_member_reducer";
+import HouseCreateHouseReducer from "./house_create_house_reducer";
+import HouseCreateInviteReducer from "./house_create_invite_reducer";
+import HouseDeleteHouseReducer from "./house_delete_house_reducer";
+import HouseJoinByInviteReducer from "./house_join_by_invite_reducer";
+import HouseKickMemberReducer from "./house_kick_member_reducer";
+import HouseRevokeInviteReducer from "./house_revoke_invite_reducer";
+import HouseUnbanMemberReducer from "./house_unban_member_reducer";
+import HouseUpdateHouseReducer from "./house_update_house_reducer";
+import MessagesAddReactionReducer from "./messages_add_reaction_reducer";
+import MessagesDeleteMessageReducer from "./messages_delete_message_reducer";
+import MessagesEditMessageReducer from "./messages_edit_message_reducer";
+import MessagesRemoveReactionReducer from "./messages_remove_reaction_reducer";
+import MessagesSendMessageReducer from "./messages_send_message_reducer";
+import RolesAssignRoleReducer from "./roles_assign_role_reducer";
+import RolesCreateRoleReducer from "./roles_create_role_reducer";
+import RolesDeleteRoleReducer from "./roles_delete_role_reducer";
+import RolesRevokeRoleReducer from "./roles_revoke_role_reducer";
+import RolesUpdateRoleReducer from "./roles_update_role_reducer";
+import RoomsCreateRoomReducer from "./rooms_create_room_reducer";
+import RoomsDeleteRoomReducer from "./rooms_delete_room_reducer";
+import RoomsSetRoomPermissionOverrideReducer from "./rooms_set_room_permission_override_reducer";
+import RoomsUpdateRoomReducer from "./rooms_update_room_reducer";
+import UserUpdateProfileReducer from "./user_update_profile_reducer";
+import UserUpdateStatusReducer from "./user_update_status_reducer";
+import VoiceJoinRoomReducer from "./voice_join_room_reducer";
+import VoiceLeaveRoomReducer from "./voice_leave_room_reducer";
+import VoiceStartScreenShareReducer from "./voice_start_screen_share_reducer";
+import VoiceStopScreenShareReducer from "./voice_stop_screen_share_reducer";
+import VoiceUpdateMediaStateReducer from "./voice_update_media_state_reducer";
 
 // Import all procedure arg schemas
 
 // Import all table schema definitions
+import AttachmentsRow from "./attachments_table";
+import BadgesRow from "./badges_table";
 import BootstrapEventsRow from "./bootstrap_events_table";
+import DmMessagesRow from "./dm_messages_table";
+import HouseBansRow from "./house_bans_table";
+import HouseMembersRow from "./house_members_table";
+import HousesRow from "./houses_table";
+import InvitesRow from "./invites_table";
+import MemberRolesRow from "./member_roles_table";
+import MessagesRow from "./messages_table";
+import PresenceRow from "./presence_table";
+import ReactionsRow from "./reactions_table";
+import RolesRow from "./roles_table";
+import RoomPermissionOverridesRow from "./room_permission_overrides_table";
+import RoomsRow from "./rooms_table";
+import ScreenSharesRow from "./screen_shares_table";
+import UserBadgesRow from "./user_badges_table";
+import UsersRow from "./users_table";
+import VoiceStatesRow from "./voice_states_table";
 
 /** Type-only namespace exports for generated type groups. */
 
 /** The schema information for all tables in this module. This is defined the same was as the tables would have been defined in the server. */
 const tablesSchema = __schema({
+  attachments: __table({
+    name: 'attachments',
+    indexes: [
+      { name: 'id', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { name: 'messageId', algorithm: 'btree', columns: [
+        'messageId',
+      ] },
+    ],
+    constraints: [
+      { name: 'attachments_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, AttachmentsRow),
+  badges: __table({
+    name: 'badges',
+    indexes: [
+      { name: 'houseId', algorithm: 'btree', columns: [
+        'houseId',
+      ] },
+      { name: 'id', algorithm: 'btree', columns: [
+        'id',
+      ] },
+    ],
+    constraints: [
+      { name: 'badges_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, BadgesRow),
   bootstrapEvents: __table({
     name: 'bootstrap_events',
     indexes: [
@@ -53,12 +136,304 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, BootstrapEventsRow),
+  dmMessages: __table({
+    name: 'dm_messages',
+    indexes: [
+      { name: 'conversationKey', algorithm: 'btree', columns: [
+        'conversationKey',
+      ] },
+      { name: 'fromUserId', algorithm: 'btree', columns: [
+        'fromUserId',
+      ] },
+      { name: 'id', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { name: 'toUserId', algorithm: 'btree', columns: [
+        'toUserId',
+      ] },
+    ],
+    constraints: [
+      { name: 'dm_messages_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, DmMessagesRow),
+  houseBans: __table({
+    name: 'house_bans',
+    indexes: [
+      { name: 'houseId', algorithm: 'btree', columns: [
+        'houseId',
+      ] },
+      { name: 'id', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { name: 'userId', algorithm: 'btree', columns: [
+        'userId',
+      ] },
+    ],
+    constraints: [
+      { name: 'house_bans_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, HouseBansRow),
+  houseMembers: __table({
+    name: 'house_members',
+    indexes: [
+      { name: 'houseId', algorithm: 'btree', columns: [
+        'houseId',
+      ] },
+      { name: 'id', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { name: 'userId', algorithm: 'btree', columns: [
+        'userId',
+      ] },
+    ],
+    constraints: [
+      { name: 'house_members_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, HouseMembersRow),
+  houses: __table({
+    name: 'houses',
+    indexes: [
+      { name: 'id', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { name: 'ownerId', algorithm: 'btree', columns: [
+        'ownerId',
+      ] },
+    ],
+    constraints: [
+      { name: 'houses_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, HousesRow),
+  invites: __table({
+    name: 'invites',
+    indexes: [
+      { name: 'code', algorithm: 'btree', columns: [
+        'code',
+      ] },
+      { name: 'houseId', algorithm: 'btree', columns: [
+        'houseId',
+      ] },
+    ],
+    constraints: [
+      { name: 'invites_code_key', constraint: 'unique', columns: ['code'] },
+    ],
+  }, InvitesRow),
+  memberRoles: __table({
+    name: 'member_roles',
+    indexes: [
+      { name: 'houseId', algorithm: 'btree', columns: [
+        'houseId',
+      ] },
+      { name: 'id', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { name: 'roleId', algorithm: 'btree', columns: [
+        'roleId',
+      ] },
+      { name: 'userId', algorithm: 'btree', columns: [
+        'userId',
+      ] },
+    ],
+    constraints: [
+      { name: 'member_roles_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, MemberRolesRow),
+  messages: __table({
+    name: 'messages',
+    indexes: [
+      { name: 'authorId', algorithm: 'btree', columns: [
+        'authorId',
+      ] },
+      { name: 'id', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { name: 'roomId', algorithm: 'btree', columns: [
+        'roomId',
+      ] },
+    ],
+    constraints: [
+      { name: 'messages_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, MessagesRow),
+  presence: __table({
+    name: 'presence',
+    indexes: [
+      { name: 'userId', algorithm: 'btree', columns: [
+        'userId',
+      ] },
+    ],
+    constraints: [
+      { name: 'presence_user_id_key', constraint: 'unique', columns: ['userId'] },
+    ],
+  }, PresenceRow),
+  reactions: __table({
+    name: 'reactions',
+    indexes: [
+      { name: 'id', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { name: 'messageId', algorithm: 'btree', columns: [
+        'messageId',
+      ] },
+      { name: 'userId', algorithm: 'btree', columns: [
+        'userId',
+      ] },
+    ],
+    constraints: [
+      { name: 'reactions_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, ReactionsRow),
+  roles: __table({
+    name: 'roles',
+    indexes: [
+      { name: 'houseId', algorithm: 'btree', columns: [
+        'houseId',
+      ] },
+      { name: 'id', algorithm: 'btree', columns: [
+        'id',
+      ] },
+    ],
+    constraints: [
+      { name: 'roles_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, RolesRow),
+  roomPermissionOverrides: __table({
+    name: 'room_permission_overrides',
+    indexes: [
+      { name: 'id', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { name: 'roleId', algorithm: 'btree', columns: [
+        'roleId',
+      ] },
+      { name: 'roomId', algorithm: 'btree', columns: [
+        'roomId',
+      ] },
+    ],
+    constraints: [
+      { name: 'room_permission_overrides_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, RoomPermissionOverridesRow),
+  rooms: __table({
+    name: 'rooms',
+    indexes: [
+      { name: 'houseId', algorithm: 'btree', columns: [
+        'houseId',
+      ] },
+      { name: 'id', algorithm: 'btree', columns: [
+        'id',
+      ] },
+    ],
+    constraints: [
+      { name: 'rooms_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, RoomsRow),
+  screenShares: __table({
+    name: 'screen_shares',
+    indexes: [
+      { name: 'houseId', algorithm: 'btree', columns: [
+        'houseId',
+      ] },
+      { name: 'roomId', algorithm: 'btree', columns: [
+        'roomId',
+      ] },
+      { name: 'userId', algorithm: 'btree', columns: [
+        'userId',
+      ] },
+    ],
+    constraints: [
+      { name: 'screen_shares_user_id_key', constraint: 'unique', columns: ['userId'] },
+    ],
+  }, ScreenSharesRow),
+  userBadges: __table({
+    name: 'user_badges',
+    indexes: [
+      { name: 'badgeId', algorithm: 'btree', columns: [
+        'badgeId',
+      ] },
+      { name: 'houseId', algorithm: 'btree', columns: [
+        'houseId',
+      ] },
+      { name: 'id', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { name: 'userId', algorithm: 'btree', columns: [
+        'userId',
+      ] },
+    ],
+    constraints: [
+      { name: 'user_badges_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, UserBadgesRow),
+  users: __table({
+    name: 'users',
+    indexes: [
+      { name: 'id', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { name: 'username', algorithm: 'btree', columns: [
+        'username',
+      ] },
+    ],
+    constraints: [
+      { name: 'users_id_key', constraint: 'unique', columns: ['id'] },
+      { name: 'users_username_key', constraint: 'unique', columns: ['username'] },
+    ],
+  }, UsersRow),
+  voiceStates: __table({
+    name: 'voice_states',
+    indexes: [
+      { name: 'userId', algorithm: 'btree', columns: [
+        'userId',
+      ] },
+    ],
+    constraints: [
+      { name: 'voice_states_user_id_key', constraint: 'unique', columns: ['userId'] },
+    ],
+  }, VoiceStatesRow),
 });
 
 /** The schema information for all reducers in this module. This is defined the same way as the reducers would have been defined in the server, except the body of the reducer is omitted in code generation. */
 const reducersSchema = __reducers(
+  __reducerSchema("auth_assert_session", AuthAssertSessionReducer),
   __reducerSchema("auth_login", AuthLoginReducer),
+  __reducerSchema("auth_logout", AuthLogoutReducer),
   __reducerSchema("auth_register", AuthRegisterReducer),
+  __reducerSchema("badges_grant_badge", BadgesGrantBadgeReducer),
+  __reducerSchema("badges_revoke_badge", BadgesRevokeBadgeReducer),
+  __reducerSchema("dms_delete_dm", DmsDeleteDmReducer),
+  __reducerSchema("dms_edit_dm", DmsEditDmReducer),
+  __reducerSchema("dms_send_dm", DmsSendDmReducer),
+  __reducerSchema("house_ban_member", HouseBanMemberReducer),
+  __reducerSchema("house_create_house", HouseCreateHouseReducer),
+  __reducerSchema("house_create_invite", HouseCreateInviteReducer),
+  __reducerSchema("house_delete_house", HouseDeleteHouseReducer),
+  __reducerSchema("house_join_by_invite", HouseJoinByInviteReducer),
+  __reducerSchema("house_kick_member", HouseKickMemberReducer),
+  __reducerSchema("house_revoke_invite", HouseRevokeInviteReducer),
+  __reducerSchema("house_unban_member", HouseUnbanMemberReducer),
+  __reducerSchema("house_update_house", HouseUpdateHouseReducer),
+  __reducerSchema("messages_add_reaction", MessagesAddReactionReducer),
+  __reducerSchema("messages_delete_message", MessagesDeleteMessageReducer),
+  __reducerSchema("messages_edit_message", MessagesEditMessageReducer),
+  __reducerSchema("messages_remove_reaction", MessagesRemoveReactionReducer),
+  __reducerSchema("messages_send_message", MessagesSendMessageReducer),
+  __reducerSchema("roles_assign_role", RolesAssignRoleReducer),
+  __reducerSchema("roles_create_role", RolesCreateRoleReducer),
+  __reducerSchema("roles_delete_role", RolesDeleteRoleReducer),
+  __reducerSchema("roles_revoke_role", RolesRevokeRoleReducer),
+  __reducerSchema("roles_update_role", RolesUpdateRoleReducer),
+  __reducerSchema("rooms_create_room", RoomsCreateRoomReducer),
+  __reducerSchema("rooms_delete_room", RoomsDeleteRoomReducer),
+  __reducerSchema("rooms_set_room_permission_override", RoomsSetRoomPermissionOverrideReducer),
+  __reducerSchema("rooms_update_room", RoomsUpdateRoomReducer),
+  __reducerSchema("user_update_profile", UserUpdateProfileReducer),
+  __reducerSchema("user_update_status", UserUpdateStatusReducer),
+  __reducerSchema("voice_join_room", VoiceJoinRoomReducer),
+  __reducerSchema("voice_leave_room", VoiceLeaveRoomReducer),
+  __reducerSchema("voice_start_screen_share", VoiceStartScreenShareReducer),
+  __reducerSchema("voice_stop_screen_share", VoiceStopScreenShareReducer),
+  __reducerSchema("voice_update_media_state", VoiceUpdateMediaStateReducer),
 );
 
 /** The schema information for all procedures in this module. This is defined the same way as the procedures would have been defined in the server. */

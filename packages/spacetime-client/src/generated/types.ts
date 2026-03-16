@@ -10,9 +10,206 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
+export const Attachments = __t.object("Attachments", {
+  id: __t.string(),
+  messageId: __t.string(),
+  url: __t.string(),
+  filename: __t.string(),
+  mimeType: __t.string(),
+  sizeBytes: __t.u32(),
+  createdAt: __t.string(),
+});
+export type Attachments = __Infer<typeof Attachments>;
+
+export const Badges = __t.object("Badges", {
+  id: __t.string(),
+  houseId: __t.string(),
+  name: __t.string(),
+  icon: __t.string(),
+  badgeType: __t.string(),
+  createdBy: __t.string(),
+  createdAt: __t.string(),
+});
+export type Badges = __Infer<typeof Badges>;
+
 export const BootstrapEvents = __t.object("BootstrapEvents", {
   event: __t.string(),
   createdAt: __t.string(),
 });
 export type BootstrapEvents = __Infer<typeof BootstrapEvents>;
+
+export const DmMessages = __t.object("DmMessages", {
+  id: __t.string(),
+  conversationKey: __t.string(),
+  fromUserId: __t.string(),
+  toUserId: __t.string(),
+  content: __t.string(),
+  editedAt: __t.string(),
+  deletedAt: __t.string(),
+  createdAt: __t.string(),
+});
+export type DmMessages = __Infer<typeof DmMessages>;
+
+export const HouseBans = __t.object("HouseBans", {
+  id: __t.string(),
+  houseId: __t.string(),
+  userId: __t.string(),
+  bannedBy: __t.string(),
+  reason: __t.string(),
+  bannedAt: __t.string(),
+});
+export type HouseBans = __Infer<typeof HouseBans>;
+
+export const HouseMembers = __t.object("HouseMembers", {
+  id: __t.string(),
+  houseId: __t.string(),
+  userId: __t.string(),
+  joinedAt: __t.string(),
+});
+export type HouseMembers = __Infer<typeof HouseMembers>;
+
+export const Houses = __t.object("Houses", {
+  id: __t.string(),
+  name: __t.string(),
+  description: __t.string(),
+  iconUrl: __t.string(),
+  ownerId: __t.string(),
+  isPublic: __t.bool(),
+  tags: __t.string(),
+  themeId: __t.string(),
+  accentColor: __t.string(),
+  createdAt: __t.string(),
+});
+export type Houses = __Infer<typeof Houses>;
+
+export const Invites = __t.object("Invites", {
+  code: __t.string(),
+  houseId: __t.string(),
+  createdBy: __t.string(),
+  expiresAt: __t.option(__t.string()),
+  maxUses: __t.option(__t.u32()),
+  uses: __t.u32(),
+  createdAt: __t.string(),
+});
+export type Invites = __Infer<typeof Invites>;
+
+export const MemberRoles = __t.object("MemberRoles", {
+  id: __t.string(),
+  houseId: __t.string(),
+  userId: __t.string(),
+  roleId: __t.string(),
+  assignedBy: __t.string(),
+  assignedAt: __t.string(),
+});
+export type MemberRoles = __Infer<typeof MemberRoles>;
+
+export const Messages = __t.object("Messages", {
+  id: __t.string(),
+  roomId: __t.string(),
+  authorId: __t.string(),
+  content: __t.string(),
+  editedAt: __t.string(),
+  deletedAt: __t.string(),
+  threadParentId: __t.string(),
+  isPinned: __t.bool(),
+  createdAt: __t.string(),
+});
+export type Messages = __Infer<typeof Messages>;
+
+export const Presence = __t.object("Presence", {
+  userId: __t.string(),
+  status: __t.string(),
+  customText: __t.string(),
+  lastSeen: __t.string(),
+  currentHouseId: __t.string(),
+  currentRoomId: __t.string(),
+});
+export type Presence = __Infer<typeof Presence>;
+
+export const Reactions = __t.object("Reactions", {
+  id: __t.string(),
+  messageId: __t.string(),
+  userId: __t.string(),
+  emoji: __t.string(),
+  createdAt: __t.string(),
+});
+export type Reactions = __Infer<typeof Reactions>;
+
+export const Roles = __t.object("Roles", {
+  id: __t.string(),
+  houseId: __t.string(),
+  name: __t.string(),
+  color: __t.string(),
+  position: __t.i32(),
+  permissions: __t.string(),
+  isDefault: __t.bool(),
+  createdAt: __t.string(),
+});
+export type Roles = __Infer<typeof Roles>;
+
+export const RoomPermissionOverrides = __t.object("RoomPermissionOverrides", {
+  id: __t.string(),
+  roomId: __t.string(),
+  roleId: __t.string(),
+  allow: __t.string(),
+  deny: __t.string(),
+});
+export type RoomPermissionOverrides = __Infer<typeof RoomPermissionOverrides>;
+
+export const Rooms = __t.object("Rooms", {
+  id: __t.string(),
+  houseId: __t.string(),
+  name: __t.string(),
+  type: __t.string(),
+  description: __t.string(),
+  position: __t.i32(),
+  slowmodeSeconds: __t.u32(),
+  createdAt: __t.string(),
+});
+export type Rooms = __Infer<typeof Rooms>;
+
+export const ScreenShares = __t.object("ScreenShares", {
+  userId: __t.string(),
+  houseId: __t.string(),
+  roomId: __t.string(),
+  startedAt: __t.string(),
+});
+export type ScreenShares = __Infer<typeof ScreenShares>;
+
+export const Sessions = __t.object("Sessions", {
+  token: __t.string(),
+  userId: __t.string(),
+  expiresAt: __t.string(),
+  createdAt: __t.string(),
+});
+export type Sessions = __Infer<typeof Sessions>;
+
+export const UserBadges = __t.object("UserBadges", {
+  id: __t.string(),
+  houseId: __t.string(),
+  badgeId: __t.string(),
+  userId: __t.string(),
+  grantedBy: __t.string(),
+  grantedAt: __t.string(),
+});
+export type UserBadges = __Infer<typeof UserBadges>;
+
+export const Users = __t.object("Users", {
+  id: __t.string(),
+  username: __t.string(),
+  passwordHash: __t.string(),
+  createdAt: __t.string(),
+  displayName: __t.option(__t.string()),
+  avatarUrl: __t.option(__t.string()),
+  bio: __t.option(__t.string()),
+});
+export type Users = __Infer<typeof Users>;
+
+export const VoiceStates = __t.object("VoiceStates", {
+  userId: __t.string(),
+  muted: __t.bool(),
+  cameraOn: __t.bool(),
+  updatedAt: __t.string(),
+});
+export type VoiceStates = __Infer<typeof VoiceStates>;
 

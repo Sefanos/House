@@ -1,19 +1,10 @@
-import * as auth from "./auth/index.js";
-import * as user from "./user/index.js";
-import * as house from "./house/index.js";
-import * as roles from "./roles/index.js";
-import * as rooms from "./rooms/index.js";
-import * as messages from "./messages/index.js";
-import * as dms from "./dms/index.js";
-import * as badges from "./badges/index.js";
-
-export const reducers = {
-  auth,
-  user,
-  house,
-  roles,
-  rooms,
-  messages,
-  dms,
-  badges
-};
+export * from "./init.js";
+export * from "./auth/index.js";
+export * from "./user/index.js";
+export * from "./house/index.js";
+export * from "./roles/index.js";
+export * from "./rooms/index.js";
+export * from "./messages/index.js";
+export * from "./dms/index.js";
+export * from "./voice/index.js";
+export * from "./badges/index.js";

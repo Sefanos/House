@@ -23,6 +23,7 @@ export const Permission = {
 } as const;
 
 export type PermissionKey = keyof typeof Permission;
+export type PermissionBits = bigint | string | number;
 
 export const DEFAULT_MEMBER_PERMISSIONS =
   Permission.VIEW_ROOM |
@@ -55,4 +56,128 @@ export function hasPermission(userPerms: bigint, permission: bigint): boolean {
 
 export function combinePermissions(...perms: bigint[]): bigint {
   return perms.reduce((acc, p) => acc | p, 0n);
+}
+
+export type RoomOverride = {
+  allow: bigint;
+  deny: bigint;
+};
+
+export type ResolvePermissionsInput = {
+  isOwner: boolean;
+  basePerms: bigint;
+  roomOverrides?: RoomOverride[];
+};
+
+export type PermissionRole = {
+  id: string;
+  permissions: PermissionBits;
+  isDefault: boolean;
+};
+
+export type PermissionMemberRole = {
+  userId: string;
+  roleId: string;
+};
+
+export type PermissionRoomOverride = {
+  roomId: string;
+  roleId: string;
+  allow: PermissionBits;
+  deny: PermissionBits;
+};
+
+export type ResolveUserPermissionsInput = {
+  houseOwnerId?: string;
+  userId: string;
+  roomId?: string;
+  roles: PermissionRole[];
+  memberRoles: PermissionMemberRole[];
+  roomPermissionOverrides?: PermissionRoomOverride[];
+};
+
+function toPermissionBits(value: PermissionBits): bigint {
+  if (typeof value === "bigint") {
+    return value;
+  }
+  if (typeof value === "number") {
+    return BigInt(Math.trunc(value));
+  }
+  const normalized = value.trim();
+  if (!normalized) {
+    return 0n;
+  }
+  try {
+    return BigInt(normalized);
+  } catch {
+    return 0n;
+  }
+}
+
+export function resolvePermissions(input: ResolvePermissionsInput): bigint {
+  if (input.isOwner) {
+    return ~0n;
+  }
+
+  const basePerms = input.basePerms;
+  if (hasPermission(basePerms, Permission.ADMINISTRATOR)) {
+    return basePerms;
+  }
+
+  let allow = 0n;
+  let deny = 0n;
+  for (const override of input.roomOverrides ?? []) {
+    allow |= override.allow;
+    deny |= override.deny;
+  }
+
+  return (basePerms | allow) & ~deny;
+}
+
+export function resolveUserPermissions(input: ResolveUserPermissionsInput): bigint {
+  if (!input.userId) {
+    return 0n;
+  }
+
+  const isOwner = Boolean(input.houseOwnerId && input.houseOwnerId === input.userId);
+  const roleIds = new Set<string>();
+
+  for (const role of input.roles) {
+    if (role.isDefault) {
+      roleIds.add(role.id);
+    }
+  }
+
+  for (const memberRole of input.memberRoles) {
+    if (memberRole.userId === input.userId) {
+      roleIds.add(memberRole.roleId);
+    }
+  }
+
+  let basePerms = 0n;
+  for (const role of input.roles) {
+    if (!roleIds.has(role.id)) {
+      continue;
+    }
+    basePerms |= toPermissionBits(role.permissions);
+  }
+
+  const roomOverrides: RoomOverride[] = [];
+  if (input.roomId) {
+    for (const override of input.roomPermissionOverrides ?? []) {
+      if (override.roomId !== input.roomId || !roleIds.has(override.roleId)) {
+        continue;
+      }
+      roomOverrides.push({
+        allow: toPermissionBits(override.allow),
+        deny: toPermissionBits(override.deny)
+      });
+    }
+  }
+
+  return resolvePermissions({
+    isOwner,
+    basePerms,
+    roomOverrides
+  });
 }

@@ -10,13 +10,31 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "spacetime:publish": "pnpm --filter @houseplan/spacetime spacetime:publish",
-    "spacetime:generate": "pnpm --filter @houseplan/spacetime spacetime:generate"
+    "spacetime:generate": "pnpm --filter @houseplan/spacetime spacetime:generate",
+    "smoke:bootstrap": "bash ./scripts/smoke-bootstrap.sh",
+    "smoke:phase1-auth": "bash ./scripts/smoke-phase1-auth.sh",
+    "smoke:phase2-profile-presence": "bash ./scripts/smoke-phase2-profile-presence.sh",
+    "smoke:phase3-houses-membership": "bash ./scripts/smoke-phase3-houses-membership.sh",
+    "smoke:phase4-rooms-navigation": "bash ./scripts/smoke-phase4-rooms-navigation.sh",
+    "smoke:phase5-chat-core": "bash ./scripts/smoke-phase5-chat-core.sh",
+    "smoke:phase6-roles-permissions": "bash ./scripts/smoke-phase6-roles-permissions.sh",
+    "smoke:phase7-invites-moderation": "bash ./scripts/smoke-phase7-invites-moderation.sh",
+    "smoke:phase8-dms": "bash ./scripts/smoke-phase8-dms.sh",
+    "smoke:phase9-voice": "bash ./scripts/smoke-phase9-voice.sh",
+    "smoke:phase10-screen-share-layouts": "bash ./scripts/smoke-phase10-screen-share-layouts.sh",
+    "smoke:phase11-discovery-public-profiles": "bash ./scripts/smoke-phase11-discovery-public-profiles.sh",
+    "smoke:phase12-badges-themes": "bash ./scripts/smoke-phase12-badges-themes.sh",
+    "smoke:phase13-release-readiness": "bash ./scripts/smoke-phase13-release-readiness.sh",
+    "smoke:schema-change-protocol": "bash ./scripts/smoke-schema-change-protocol.sh"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@types/node": "^20.17.0",
     "eslint": "^9.22.0",
+    "globals": "^16.4.0",
     "prettier": "^3.5.3",
     "turbo": "^2.4.4",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.46.3"
   }
 }

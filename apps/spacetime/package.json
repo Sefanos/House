@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "spacetime build --module-path .",
-    "lint": "echo \"lint placeholder for bootstrap\"",
+    "lint": "eslint --no-error-on-unmatched-pattern \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "echo \"No tests yet\"",
     "spacetime:publish": "spacetime publish houseplan --server http://localhost:3000 --module-path . --yes",

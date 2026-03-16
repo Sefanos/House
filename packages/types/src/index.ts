@@ -1,3 +1,3 @@
-export * from "./permissions.js";
-export * from "./theme.js";
-export * from "./entities.js";
+export * from "./permissions";
+export * from "./theme";
+export * from "./entities";

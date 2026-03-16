@@ -13,9 +13,9 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "lint": "echo \"lint placeholder for bootstrap\"",
+    "lint": "eslint --no-error-on-unmatched-pattern \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "echo \"No tests yet\""
+    "test": "pnpm build && node --test test/*.test.mjs"
   },
   "devDependencies": {
     "typescript": "^5.8.2"
