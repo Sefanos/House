@@ -618,7 +618,8 @@ export default function RoomPage({ params }: RoomPageProps) {
     event.preventDefault();
     if (!room) return;
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const roleId = String(formData.get("overrideRoleId") ?? "");
     const allow = String(formData.get("overrideAllow") ?? "0");
     const deny = String(formData.get("overrideDeny") ?? "0");
@@ -638,7 +639,7 @@ export default function RoomPage({ params }: RoomPageProps) {
           });
         }
       });
-      event.currentTarget.reset();
+      form.reset();
     } finally {
       setIsSavingOverride(false);
     }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { usePresignedUploadQuery } from "@/hooks/query/usePresignedUploadQuery";
 import { useHouses } from "@/hooks/spacetime/useHouses";
 import { invokeHouseReducer, type ReducerResult } from "@/lib/spacetime";
 
@@ -17,6 +18,10 @@ export default function HousesPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
+  const presignMutation = usePresignedUploadQuery();
+  const [iconFile, setIconFile] = useState<File | null>(null);
+  const [iconPreviewUrl, setIconPreviewUrl] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     const inviteFromUrl = searchParams.get("invite") ?? "";
@@ -30,10 +35,11 @@ export default function HousesPage() {
 
   async function onCreateHouse(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const name = String(formData.get("name") ?? "");
     const description = String(formData.get("description") ?? "");
-    const iconUrl = String(formData.get("iconUrl") ?? "");
+    let iconUrl = String(formData.get("iconUrl") ?? "");
     const isPublic = formData.get("isPublic") === "on";
     const themeId = String(formData.get("themeId") ?? "");
     const accentColor = String(formData.get("accentColor") ?? "");
@@ -42,6 +48,24 @@ export default function HousesPage() {
     setCreateError(null);
     setCreateResult(null);
     try {
+      if (iconFile) {
+        const { uploadUrl, publicUrl } = await presignMutation.mutateAsync({
+          fileName: iconFile.name,
+          contentType: iconFile.type,
+          sizeBytes: iconFile.size
+        });
+        const uploadResponse = await fetch(uploadUrl, {
+          method: "PUT",
+          body: iconFile,
+          headers: { "Content-Type": iconFile.type }
+        });
+        if (!uploadResponse.ok) throw new Error("Failed to upload house icon.");
+        if (!publicUrl) {
+          throw new Error("House icon upload is unavailable because no public asset URL is configured.");
+        }
+        if (publicUrl) iconUrl = publicUrl;
+      }
+
       const reducerResult = await invokeHouseReducer("house.createHouse", {
         name,
         description,
@@ -51,7 +75,9 @@ export default function HousesPage() {
         accentColor
       });
       setCreateResult(reducerResult);
-      event.currentTarget.reset();
+      form.reset();
+      setIconFile(null);
+      setIconPreviewUrl(null);
     } catch (nextError) {
       setCreateError(nextError instanceof Error ? nextError.message : "Failed to create house.");
     } finally {
@@ -124,7 +150,7 @@ export default function HousesPage() {
         </article>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-2">
+      <section className="grid items-start gap-4 lg:grid-cols-2">
         <form
           id="create-house"
           onSubmit={onCreateHouse}
@@ -160,15 +186,56 @@ export default function HousesPage() {
           </div>
 
           <div className="space-y-1">
-            <label htmlFor="iconUrl" className="text-xs uppercase tracking-wide text-slate-400">
-              Icon URL
-            </label>
-            <input
-              id="iconUrl"
-              name="iconUrl"
-              maxLength={512}
-              className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
-            />
+            <span className="text-xs uppercase tracking-wide text-slate-400">Icon</span>
+            <div
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDragging(false);
+                const file = e.dataTransfer.files?.[0];
+                if (file && file.type.startsWith("image/")) {
+                  setIconFile(file);
+                  setIconPreviewUrl(URL.createObjectURL(file));
+                }
+              }}
+              className={`relative flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed p-6 transition-colors ${
+                isDragging 
+                  ? "border-sky-500 bg-sky-500/10" 
+                  : "border-slate-700 bg-slate-950/50 hover:bg-slate-900"
+              }`}
+            >
+              <input 
+                type="hidden" 
+                name="iconUrl"
+                value=""
+              />
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file && file.type.startsWith("image/")) {
+                    setIconFile(file);
+                    setIconPreviewUrl(URL.createObjectURL(file));
+                  }
+                }}
+                className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+              />
+              {iconPreviewUrl ? (
+                <div className="flex flex-col items-center gap-3 relative z-20">
+                  <img src={iconPreviewUrl} alt="House Icon Preview" className="h-16 w-16 rounded-2xl object-cover" />
+                  <span className="text-xs text-sky-400">Change icon</span>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2 text-slate-400 relative z-20">
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                  </svg>
+                  <span className="text-xs font-medium">Click or drag image here</span>
+                </div>
+              )}
+            </div>
           </div>
           <div className="space-y-1">
             <label htmlFor="themeId" className="text-xs uppercase tracking-wide text-slate-400">
@@ -216,6 +283,7 @@ export default function HousesPage() {
           {createError ? <p className="text-sm text-rose-400">{createError}</p> : null}
         </form>
 
+      <div className="flex flex-col gap-4">
         <form
           id="join-house"
           onSubmit={onJoinByInvite}
@@ -254,7 +322,6 @@ export default function HousesPage() {
           {joinResult ? <p className="text-sm text-emerald-400">Joined house successfully.</p> : null}
           {joinError ? <p className="text-sm text-rose-400">{joinError}</p> : null}
         </form>
-      </section>
 
       <section id="house-list" className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/60 p-4">
         <h2 className="text-sm font-semibold tracking-wide text-slate-200">Your Houses</h2>
@@ -272,10 +339,25 @@ export default function HousesPage() {
         <ul className="grid gap-3 md:grid-cols-2">
           {sortedHouses.map((house) => (
             <li key={house.id} className="rounded-lg border border-slate-800 bg-slate-950/70 p-3">
-              <p className="text-base font-semibold text-slate-100">{house.name}</p>
-              <p className="mt-1 text-xs uppercase tracking-wide text-slate-400">
-                {house.isPublic ? "Public" : "Private"}
-              </p>
+              <div className="flex items-start gap-3">
+                <div className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 text-lg font-semibold text-slate-100">
+                  {house.iconUrl ? (
+                    <img
+                      src={house.iconUrl}
+                      alt={`${house.name} icon`}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    (house.name.trim().charAt(0) || "H").toUpperCase()
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-base font-semibold text-slate-100">{house.name}</p>
+                  <p className="mt-1 text-xs uppercase tracking-wide text-slate-400">
+                    {house.isPublic ? "Public" : "Private"}
+                  </p>
+                </div>
+              </div>
               <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-sm text-slate-300">
                 {house.description || "No description."}
               </p>
@@ -288,6 +370,8 @@ export default function HousesPage() {
             </li>
           ))}
         </ul>
+      </section>
+      </div>
       </section>
     </main>
   );

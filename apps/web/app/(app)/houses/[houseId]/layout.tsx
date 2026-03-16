@@ -185,7 +185,8 @@ export default function HouseLayout({ children, params }: HouseLayoutProps) {
 
   async function onCreateRoom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const name = String(formData.get("name") ?? "");
     const type = String(formData.get("type") ?? "chat");
     const description = String(formData.get("description") ?? "");
@@ -203,7 +204,7 @@ export default function HouseLayout({ children, params }: HouseLayoutProps) {
       });
       setSidebarStatus("Room created.");
       setShowCreateRoom(false);
-      event.currentTarget.reset();
+      form.reset();
     } catch (nextError) {
       setCreateError(nextError instanceof Error ? nextError.message : "Failed to create room.");
     } finally {
@@ -223,12 +224,12 @@ export default function HouseLayout({ children, params }: HouseLayoutProps) {
           },
           ...(access.canOpenHouseSettings
             ? [
-                {
-                  id: "house-settings",
-                  label: "House settings",
-                  onSelect: () => router.push(`/houses/${params.houseId}#house-settings`)
-                }
-              ]
+              {
+                id: "house-settings",
+                label: "House settings",
+                onSelect: () => router.push(`/houses/${params.houseId}#house-settings`)
+              }
+            ]
             : [])
         ]
       },
@@ -238,21 +239,21 @@ export default function HouseLayout({ children, params }: HouseLayoutProps) {
         actions: [
           ...(access.canManageInvites
             ? [
-                {
-                  id: "create-invite-link",
-                  label: "Create invite link",
-                  onSelect: () => createInviteLink()
-                }
-              ]
+              {
+                id: "create-invite-link",
+                label: "Create invite link",
+                onSelect: () => createInviteLink()
+              }
+            ]
             : []),
           ...(access.canCreateRooms
             ? [
-                {
-                  id: "create-room",
-                  label: "Create room",
-                  onSelect: () => setShowCreateRoom(true)
-                }
-              ]
+              {
+                id: "create-room",
+                label: "Create room",
+                onSelect: () => setShowCreateRoom(true)
+              }
+            ]
             : []),
           {
             id: "copy-house-id",
@@ -282,12 +283,12 @@ export default function HouseLayout({ children, params }: HouseLayoutProps) {
           },
           ...(access.canManageRooms
             ? [
-                {
-                  id: "room-settings",
-                  label: "Room settings",
-                  onSelect: () => router.push(`/houses/${params.houseId}/rooms/${selectedRoom.id}#room-settings`)
-                }
-              ]
+              {
+                id: "room-settings",
+                label: "Room settings",
+                onSelect: () => router.push(`/houses/${params.houseId}/rooms/${selectedRoom.id}#room-settings`)
+              }
+            ]
             : [])
         ]
       },
@@ -297,12 +298,12 @@ export default function HouseLayout({ children, params }: HouseLayoutProps) {
         actions: [
           ...(access.canManageInvites
             ? [
-                {
-                  id: "room-invite-link",
-                  label: "Create invite link",
-                  onSelect: () => createInviteLink()
-                }
-              ]
+              {
+                id: "room-invite-link",
+                label: "Create invite link",
+                onSelect: () => createInviteLink()
+              }
+            ]
             : []),
           {
             id: "copy-room-id",
@@ -320,7 +321,7 @@ export default function HouseLayout({ children, params }: HouseLayoutProps) {
   const activeMenuSections = menuState?.kind === "house" ? houseMenuSections : roomMenuSections;
 
   return (
-    <section className="grid min-h-[calc(100vh-2rem)] grid-cols-1 gap-3 lg:grid-cols-[292px_minmax(0,1fr)]">
+    <section className="grid min-h-[calc(100vh-2rem)] grid-cols-1 gap-1 lg:grid-cols-[292px_minmax(0,1fr)]">
       <aside className="flex min-h-[calc(100vh-2rem)] flex-col overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/60 p-3 lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)]">
         <div
           className="rounded-3xl border border-slate-800 bg-slate-900/75 p-3.5"
@@ -330,13 +331,21 @@ export default function HouseLayout({ children, params }: HouseLayoutProps) {
           }}
         >
           <div className="flex items-start gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-2xl border border-slate-700 bg-slate-950 text-lg font-semibold text-slate-100">
-              {(house?.name.trim().charAt(0) || "H").toUpperCase()}
+            <div className="grid h-12 w-12 place-items-center overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 text-lg font-semibold text-slate-100">
+              {house?.iconUrl ? (
+                <img
+                  src={house.iconUrl}
+                  alt={`${house.name} icon`}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                (house?.name.trim().charAt(0) || "H").toUpperCase()
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-lg font-semibold text-slate-100">{house?.name ?? "House Workspace"}</p>
               <p className="mt-1 line-clamp-2 text-xs text-slate-400">
-                {house?.description || "Right click this card for house actions and settings."}
+                {house?.description}
               </p>
             </div>
             <button
@@ -352,12 +361,12 @@ export default function HouseLayout({ children, params }: HouseLayoutProps) {
             </button>
           </div>
 
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-col gap-2">
             {access.canCreateRooms ? (
               <button
                 type="button"
                 onClick={() => setShowCreateRoom((value) => !value)}
-                className="rounded-xl bg-sky-500 px-3 py-2 text-sm font-medium text-slate-950 transition hover:bg-sky-400"
+                className="w-full rounded-xl bg-sky-500 px-3 py-2 text-center text-sm font-medium text-slate-950 transition hover:bg-sky-400"
               >
                 {showCreateRoom ? "Close room form" : "Create room"}
               </button>
@@ -365,7 +374,7 @@ export default function HouseLayout({ children, params }: HouseLayoutProps) {
             {access.canOpenHouseSettings ? (
               <Link
                 href={`/houses/${params.houseId}#house-settings`}
-                className="rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-200 transition hover:bg-slate-800"
+                className="w-full rounded-xl border border-slate-700 px-3 py-2 text-center text-sm text-slate-200 transition hover:bg-slate-800"
               >
                 House settings
               </Link>
@@ -440,11 +449,10 @@ export default function HouseLayout({ children, params }: HouseLayoutProps) {
                   return (
                     <li key={room.id}>
                       <div
-                        className={`group flex items-center gap-2 rounded-2xl border px-2 py-1.5 transition ${
-                          isActive
+                        className={`group flex items-center gap-2 rounded-2xl border px-2 py-1.5 transition ${isActive
                             ? "border-sky-400/50 bg-sky-500/12 text-sky-100"
                             : "border-slate-800 bg-slate-950/70 text-slate-200 hover:bg-slate-900"
-                        }`}
+                          }`}
                         onContextMenu={(event) => {
                           event.preventDefault();
                           setMenuState({ kind: "room", roomId: room.id, x: event.clientX, y: event.clientY });
@@ -501,11 +509,10 @@ export default function HouseLayout({ children, params }: HouseLayoutProps) {
                   return (
                     <li key={room.id}>
                       <div
-                        className={`group flex items-center gap-2 rounded-2xl border px-2 py-1.5 transition ${
-                          isActive
+                        className={`group flex items-center gap-2 rounded-2xl border px-2 py-1.5 transition ${isActive
                             ? "border-emerald-400/50 bg-emerald-500/12 text-emerald-100"
                             : "border-slate-800 bg-slate-950/70 text-slate-200 hover:bg-slate-900"
-                        }`}
+                          }`}
                         onContextMenu={(event) => {
                           event.preventDefault();
                           setMenuState({ kind: "room", roomId: room.id, x: event.clientX, y: event.clientY });

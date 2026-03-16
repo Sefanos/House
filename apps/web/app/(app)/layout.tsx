@@ -131,6 +131,22 @@ export default function AppLayout({ children }: AppLayoutProps) {
       type="button"
       onClick={onLogout}
       disabled={isLoggingOut}
+      className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-rose-700 bg-rose-950 text-rose-300 transition hover:bg-rose-900 disabled:cursor-not-allowed disabled:opacity-70 mt-auto"
+      title="Logout"
+    >
+      <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-[1.8]" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <polyline points="16 17 21 12 16 7"></polyline>
+        <line x1="21" y1="12" x2="9" y2="12"></line>
+      </svg>
+    </button>
+  );
+
+  const headerLogoutButton = (
+    <button
+      type="button"
+      onClick={onLogout}
+      disabled={isLoggingOut}
       className="rounded-md border border-slate-700 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
     >
       {isLoggingOut ? "Logging out..." : "Logout"}
@@ -186,9 +202,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
               </Link>
             );
           })}
+          <div className="mt-auto hidden lg:block" />
+          {logoutButton}
         </aside>
 
-        <section className="min-w-0 p-3 lg:p-4">{children}</section>
+        <section className="min-w-0 p-3 lg:py-4 lg:pl-2 lg:pr-4">{children}</section>
       </main>
     );
   }
@@ -240,7 +258,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           >
             DMs
           </Link>
-          <div className="hidden sm:block">{logoutButton}</div>
+          <div className="hidden sm:block">{headerLogoutButton}</div>
         </div>
       </header>
 
@@ -315,7 +333,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             </div>
           </details>
 
-          <div className="sm:hidden">{logoutButton}</div>
+          <div className="sm:hidden">{headerLogoutButton}</div>
         </aside>
 
         <section className="min-w-0 rounded-xl border border-slate-800 bg-slate-900/30 p-4 lg:p-6">

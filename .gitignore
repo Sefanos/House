@@ -2,6 +2,7 @@ node_modules
 Docs
 .pnpm-store
 .turbo
+public/
 
 .next
 dist

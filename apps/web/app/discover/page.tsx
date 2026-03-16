@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useHouseSearch } from "@/hooks/spacetime/useHouseSearch";
 import { useUserSearch } from "@/hooks/spacetime/useUserSearch";
+import { AmbientBackground, HouseBrand, StatusPill } from "@/components/ui/AmbientBackground";
 
 type DiscoverTab = "houses" | "users";
 
@@ -35,133 +36,362 @@ export default function DiscoverPage() {
   const hasResults = activeSearch.results.length > 0;
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-6 px-6 py-10">
-      <header className="space-y-3">
-        <h1 className="text-3xl font-semibold tracking-tight">Discover</h1>
-        <p className="text-sm text-slate-300">
-          Browse public houses and member profiles without signing in.
-        </p>
-        <div className="flex flex-wrap gap-2 text-sm">
-          <Link
-            href="/login"
-            className="rounded-md border border-slate-700 px-3 py-1.5 text-slate-100 hover:bg-slate-800"
+    <>
+      <AmbientBackground />
+
+      <main
+        style={{
+          position: "relative",
+          zIndex: 1,
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          padding: "2.5rem 1.5rem 6rem",
+        }}
+      >
+        {/* Hero / Brand */}
+        <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <HouseBrand />
+          </div>
+          <h1 className="hp-heading" style={{ textAlign: "center", fontSize: "2.4rem" }}>
+            Discover <em>spaces</em>
+          </h1>
+          <p className="hp-subheading" style={{ textAlign: "center" }}>
+            Browse public houses and member profiles — no sign-in needed.
+          </p>
+          <div
+            className="hp-form"
+            style={{
+              display: "flex",
+              gap: "0.75rem",
+              justifyContent: "center",
+              flexWrap: "wrap",
+            }}
           >
-            Sign in
-          </Link>
-          <Link
-            href="/register"
-            className="rounded-md border border-slate-700 px-3 py-1.5 text-slate-100 hover:bg-slate-800"
-          >
-            Create account
-          </Link>
+            <Link
+              href="/login"
+              style={{
+                padding: "0.55rem 1.5rem",
+                border: "1px solid var(--hp-border)",
+                borderRadius: 999,
+                fontSize: "0.82rem",
+                color: "var(--hp-text-muted)",
+                textDecoration: "none",
+                background: "var(--hp-surface)",
+                backdropFilter: "blur(12px)",
+                transition: "background 0.2s, color 0.2s",
+              }}
+            >
+              Sign in
+            </Link>
+            <Link
+              href="/register"
+              style={{
+                padding: "0.55rem 1.5rem",
+                borderRadius: 999,
+                fontSize: "0.82rem",
+                fontWeight: 500,
+                color: "#fff",
+                textDecoration: "none",
+                background: "linear-gradient(135deg, var(--hp-accent), var(--hp-accent-dim))",
+                boxShadow: "0 4px 16px rgba(91,141,239,0.35)",
+                transition: "transform 0.18s, box-shadow 0.18s",
+              }}
+            >
+              Create account
+            </Link>
+          </div>
         </div>
-      </header>
 
-      <section className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-        <label htmlFor="discover-query" className="text-xs uppercase tracking-wide text-slate-400">
-          Search
-        </label>
-        <input
-          id="discover-query"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search houses, users, bios..."
-          className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
-        />
+        {/* Search Card */}
+        <div className="hp-card" style={{ maxWidth: 720, marginBottom: "2rem" }}>
+          <div className="hp-field" style={{ marginBottom: 0 }}>
+            <label htmlFor="discover-query">Search</label>
+            <div className="hp-input-wrap">
+              <input
+                id="discover-query"
+                type="text"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search houses, users, bios..."
+                className="hp-input"
+              />
+              <svg className="hp-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            </div>
+          </div>
 
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => setActiveTab("houses")}
-            className={`rounded-md px-3 py-1.5 text-sm ${
-              isHousesTab
-                ? "bg-sky-500 font-medium text-slate-950"
-                : "border border-slate-700 text-slate-200 hover:bg-slate-800"
-            }`}
+          {/* Tabs */}
+          <div
+            style={{
+              display: "flex",
+              gap: "0.5rem",
+              marginTop: "1rem",
+            }}
           >
-            Houses ({houseSearch.total})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("users")}
-            className={`rounded-md px-3 py-1.5 text-sm ${
-              isHousesTab
-                ? "border border-slate-700 text-slate-200 hover:bg-slate-800"
-                : "bg-sky-500 font-medium text-slate-950"
-            }`}
-          >
-            Users ({userSearch.total})
-          </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("houses")}
+              style={{
+                padding: "0.5rem 1.2rem",
+                borderRadius: 10,
+                border: "1px solid var(--hp-border)",
+                fontSize: "0.82rem",
+                fontWeight: isHousesTab ? 500 : 400,
+                cursor: "pointer",
+                background: isHousesTab
+                  ? "linear-gradient(135deg, var(--hp-accent), var(--hp-accent-dim))"
+                  : "var(--hp-surface)",
+                color: isHousesTab ? "#fff" : "var(--hp-text-muted)",
+                transition: "all 0.2s",
+                fontFamily: "var(--hp-font-family), sans-serif",
+              }}
+            >
+              Houses ({houseSearch.total})
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("users")}
+              style={{
+                padding: "0.5rem 1.2rem",
+                borderRadius: 10,
+                border: "1px solid var(--hp-border)",
+                fontSize: "0.82rem",
+                fontWeight: !isHousesTab ? 500 : 400,
+                cursor: "pointer",
+                background: !isHousesTab
+                  ? "linear-gradient(135deg, var(--hp-accent), var(--hp-accent-dim))"
+                  : "var(--hp-surface)",
+                color: !isHousesTab ? "#fff" : "var(--hp-text-muted)",
+                transition: "all 0.2s",
+                fontFamily: "var(--hp-font-family), sans-serif",
+              }}
+            >
+              Users ({userSearch.total})
+            </button>
+          </div>
         </div>
-      </section>
 
-      <section className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-        <h2 className="text-sm font-semibold tracking-wide text-slate-200">
-          {isHousesTab ? "Public Houses" : "Public Profiles"}
-        </h2>
+        {/* Results */}
+        <div style={{ width: "100%", maxWidth: 720 }}>
+          {activeSearch.isLoading ? (
+            <div style={{ textAlign: "center", padding: "3rem 0", color: "var(--hp-text-muted)", fontSize: "0.85rem" }}>
+              Loading...
+            </div>
+          ) : null}
 
-        {activeSearch.isLoading ? <p className="text-sm text-slate-300">Loading...</p> : null}
-        {activeSearch.error ? <p className="text-sm text-rose-400">{activeSearch.error}</p> : null}
+          {activeSearch.error ? (
+            <div className="hp-error" style={{ textAlign: "center" }}>
+              {activeSearch.error}
+            </div>
+          ) : null}
 
-        {!activeSearch.isLoading && !activeSearch.error && !hasResults ? (
-          <p className="text-sm text-slate-300">No results found for this search.</p>
-        ) : null}
+          {!activeSearch.isLoading && !activeSearch.error && !hasResults ? (
+            <div
+              style={{
+                textAlign: "center",
+                padding: "3rem 1rem",
+                color: "var(--hp-text-muted)",
+                fontSize: "0.9rem",
+                border: "1px solid var(--hp-border)",
+                borderRadius: 18,
+                background: "var(--hp-surface)",
+              }}
+            >
+              No results found. Try a different query.
+            </div>
+          ) : null}
 
-        {isHousesTab ? (
-          <ul className="grid gap-3 md:grid-cols-2">
-            {houseSearch.results.map((house) => (
-              <li key={house.id} className="rounded-lg border border-slate-800 bg-slate-950/70 p-3">
-                <p className="text-base font-semibold text-slate-100">{house.name}</p>
-                <p className="mt-1 text-xs uppercase tracking-wide text-emerald-300">Public House</p>
-                <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-sm text-slate-300">
-                  {house.description || "No description."}
-                </p>
-                <p className="mt-2 text-xs text-slate-400">Created: {house.createdAt}</p>
-                <Link
-                  href="/login"
-                  className="mt-3 inline-flex rounded-md border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-800"
+          {/* House results */}
+          {isHousesTab && hasResults ? (
+            <div style={{ display: "grid", gap: "1rem", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))" }}>
+              {houseSearch.results.map((house) => (
+                <div
+                  key={house.id}
+                  style={{
+                    background: "var(--hp-surface)",
+                    border: "1px solid var(--hp-border)",
+                    borderRadius: 18,
+                    padding: "1.4rem",
+                    backdropFilter: "blur(16px)",
+                    transition: "transform 0.2s, box-shadow 0.2s",
+                  }}
+                  className="hp-result-card"
                 >
-                  Sign in to join
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <ul className="grid gap-3 md:grid-cols-2">
-            {userSearch.results.map((user) => (
-              <li key={user.id} className="rounded-lg border border-slate-800 bg-slate-950/70 p-3">
-                <p className="text-base font-semibold text-slate-100">{user.displayName}</p>
-                <p className="mt-1 text-sm text-slate-300">@{user.username}</p>
-                <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-sm text-slate-300">
-                  {user.bio || "No bio yet."}
-                </p>
-                <Link
-                  href={`/profile/${user.username}`}
-                  className="mt-3 inline-flex rounded-md border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-800"
-                >
-                  Open profile
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.75rem" }}>
+                    <div
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 10,
+                        background: "linear-gradient(135deg, var(--hp-accent), var(--hp-accent-dim))",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        boxShadow: "0 2px 10px rgba(91,141,239,0.3)",
+                      }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff">
+                        <path d="M3 12L12 3l9 9v9a1 1 0 01-1 1H5a1 1 0 01-1-1v-9z" />
+                      </svg>
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 500, fontSize: "0.95rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {house.name}
+                      </div>
+                      <div style={{ fontSize: "0.68rem", color: "#5bdb8a", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                        Public
+                      </div>
+                    </div>
+                  </div>
+                  <p
+                    style={{
+                      fontSize: "0.82rem",
+                      color: "var(--hp-text-muted)",
+                      lineHeight: 1.5,
+                      minHeight: "2.4rem",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {house.description || "A cozy space — come take a peek."}
+                  </p>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "1rem", paddingTop: "0.75rem", borderTop: "1px solid var(--hp-border)" }}>
+                    <span style={{ fontSize: "0.7rem", color: "var(--hp-text-muted)" }}>
+                      {new Date(house.createdAt).toLocaleDateString()}
+                    </span>
+                    <Link
+                      href="/login"
+                      style={{
+                        fontSize: "0.78rem",
+                        fontWeight: 500,
+                        color: "var(--hp-accent-soft)",
+                        textDecoration: "none",
+                        transition: "color 0.2s",
+                      }}
+                    >
+                      Sign in to join →
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
 
-        <Pagination
-          page={activeSearch.page}
-          totalPages={activeSearch.totalPages}
-          onPrevious={
-            isHousesTab ? () => setHousePage((value) => Math.max(1, value - 1)) : () => setUserPage((value) => Math.max(1, value - 1))
-          }
-          onNext={
-            isHousesTab
-              ? () => setHousePage((value) => Math.min(houseSearch.totalPages, value + 1))
-              : () => setUserPage((value) => Math.min(userSearch.totalPages, value + 1))
-          }
-          hasPreviousPage={activeSearch.hasPreviousPage}
-          hasNextPage={activeSearch.hasNextPage}
-        />
-      </section>
-    </main>
+          {/* User results */}
+          {!isHousesTab && hasResults ? (
+            <div style={{ display: "grid", gap: "1rem", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))" }}>
+              {userSearch.results.map((user) => (
+                <div
+                  key={user.id}
+                  style={{
+                    background: "var(--hp-surface)",
+                    border: "1px solid var(--hp-border)",
+                    borderRadius: 18,
+                    padding: "1.4rem",
+                    backdropFilter: "blur(16px)",
+                    transition: "transform 0.2s, box-shadow 0.2s",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
+                    <div
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: "50%",
+                        background: "linear-gradient(135deg, #667eea, var(--hp-accent))",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "1rem",
+                        fontWeight: 700,
+                        color: "#fff",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {user.displayName.charAt(0).toUpperCase()}
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 500, fontSize: "0.95rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {user.displayName}
+                      </div>
+                      <div style={{ fontSize: "0.78rem", color: "var(--hp-text-muted)" }}>
+                        @{user.username}
+                      </div>
+                    </div>
+                  </div>
+                  <p
+                    style={{
+                      fontSize: "0.82rem",
+                      color: "var(--hp-text-muted)",
+                      lineHeight: 1.5,
+                      minHeight: "2.4rem",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {user.bio || "This member keeps their bio mysterious."}
+                  </p>
+                  <div style={{ marginTop: "1rem", paddingTop: "0.75rem", borderTop: "1px solid var(--hp-border)" }}>
+                    <Link
+                      href={`/profile/${user.username}`}
+                      style={{
+                        display: "block",
+                        textAlign: "center",
+                        padding: "0.5rem",
+                        borderRadius: 10,
+                        border: "1px solid var(--hp-border)",
+                        background: "var(--hp-surface)",
+                        color: "var(--hp-text)",
+                        fontSize: "0.82rem",
+                        textDecoration: "none",
+                        transition: "background 0.2s",
+                        fontFamily: "var(--hp-font-family), sans-serif",
+                      }}
+                    >
+                      View Profile
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {/* Pagination */}
+          {hasResults && activeSearch.totalPages > 1 ? (
+            <div style={{ display: "flex", justifyContent: "center", marginTop: "2rem" }}>
+              <Pagination
+                page={activeSearch.page}
+                totalPages={activeSearch.totalPages}
+                onPrevious={
+                  isHousesTab
+                    ? () => setHousePage((v) => Math.max(1, v - 1))
+                    : () => setUserPage((v) => Math.max(1, v - 1))
+                }
+                onNext={
+                  isHousesTab
+                    ? () => setHousePage((v) => Math.min(houseSearch.totalPages, v + 1))
+                    : () => setUserPage((v) => Math.min(userSearch.totalPages, v + 1))
+                }
+                hasPreviousPage={activeSearch.hasPreviousPage}
+                hasNextPage={activeSearch.hasNextPage}
+              />
+            </div>
+          ) : null}
+        </div>
+      </main>
+
+      <StatusPill text="Discover public rooms and members" />
+    </>
   );
 }
 
@@ -174,34 +404,40 @@ type PaginationProps = {
   onNext: () => void;
 };
 
-function Pagination({
-  page,
-  totalPages,
-  hasPreviousPage,
-  hasNextPage,
-  onPrevious,
-  onNext
-}: PaginationProps) {
+function Pagination({ page, totalPages, hasPreviousPage, hasNextPage, onPrevious, onNext }: PaginationProps) {
+  const btnStyle = (disabled: boolean): React.CSSProperties => ({
+    padding: "0.45rem 1rem",
+    borderRadius: 999,
+    border: "1px solid var(--hp-border)",
+    background: "var(--hp-surface)",
+    color: disabled ? "rgba(200,215,240,0.2)" : "var(--hp-text)",
+    fontSize: "0.82rem",
+    cursor: disabled ? "not-allowed" : "pointer",
+    transition: "background 0.2s, color 0.2s",
+    fontFamily: "var(--hp-font-family), sans-serif",
+  });
+
   return (
-    <div className="flex items-center justify-between border-t border-slate-800 pt-3">
-      <button
-        type="button"
-        onClick={onPrevious}
-        disabled={!hasPreviousPage}
-        className="rounded-md border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        Previous
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "0.75rem",
+        padding: "0.3rem",
+        borderRadius: 999,
+        border: "1px solid var(--hp-border)",
+        background: "var(--hp-surface)",
+        backdropFilter: "blur(16px)",
+      }}
+    >
+      <button type="button" onClick={onPrevious} disabled={!hasPreviousPage} style={btnStyle(!hasPreviousPage)}>
+        ← Prev
       </button>
-      <p className="text-xs text-slate-400">
-        Page {page} of {totalPages}
-      </p>
-      <button
-        type="button"
-        onClick={onNext}
-        disabled={!hasNextPage}
-        className="rounded-md border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        Next
+      <span style={{ fontSize: "0.82rem", color: "var(--hp-text-muted)", padding: "0 0.5rem" }}>
+        {page} / {totalPages}
+      </span>
+      <button type="button" onClick={onNext} disabled={!hasNextPage} style={btnStyle(!hasNextPage)}>
+        Next →
       </button>
     </div>
   );

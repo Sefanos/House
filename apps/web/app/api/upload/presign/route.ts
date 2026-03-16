@@ -148,20 +148,28 @@ export async function POST(request: Request) {
   const accessKeyId = asString(process.env.R2_ACCESS_KEY_ID ?? "");
   const secretAccessKey = asString(process.env.R2_SECRET_ACCESS_KEY ?? "");
   const bucketName = asString(process.env.R2_BUCKET_NAME ?? "houseplan-uploads");
+  const datePrefix = new Date().toISOString().slice(0, 10);
+  const objectKey = `uploads/${datePrefix}/${randomUUID()}-${fileName}`;
 
   if (!accountId || !accessKeyId || !secretAccessKey || !bucketName) {
     return NextResponse.json(
       {
-        ok: false,
+        ok: true,
         endpoint: "POST /api/upload/presign",
-        message: "R2 credentials are missing in environment variables."
-      },
-      { status: 503 }
+        method: "PUT",
+        uploadUrl: `/api/upload/local/${encodePath(objectKey)}`,
+        objectKey,
+        contentType,
+        sizeBytes,
+        expiresInSeconds: PRESIGN_EXPIRY_SECONDS,
+        requiredHeaders: {
+          "content-type": contentType
+        },
+        publicUrl: `/${encodePath(objectKey)}`
+      }
     );
   }
 
-  const datePrefix = new Date().toISOString().slice(0, 10);
-  const objectKey = `uploads/${datePrefix}/${randomUUID()}-${fileName}`;
   const uploadUrl = createPresignedUploadUrl({
     accountId,
     accessKeyId,

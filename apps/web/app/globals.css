@@ -1,21 +1,34 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Manrope:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&family=Space+Grotesk:wght@400;500;600&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --hp-bg-start: #0f172a;
-  --hp-bg-end: #020617;
-  --hp-surface: rgba(15, 23, 42, 0.78);
-  --hp-text: #f8fafc;
-  --hp-muted-text: #94a3b8;
-  --hp-accent: #38bdf8;
+  --hp-accent:        #5B8DEF;
+  --hp-accent-soft:   #82AAFF;
+  --hp-accent-dim:    #3A6BD4;
+  --hp-bg-start:      #060C18;
+  --hp-bg-end:        #0D1526;
+  --hp-surface:       rgba(255,255,255,0.045);
+  --hp-surface-hover: rgba(255,255,255,0.08);
+  --hp-border:        rgba(255,255,255,0.07);
+  --hp-text:          #E8EDF8;
+  --hp-text-muted:    rgba(200,215,240,0.45);
+  --hp-input-bg:      rgba(4,8,18,0.55);
+  --hp-glow:          rgba(91,141,239,0.18);
   --hp-scrollbar-track: rgba(15, 23, 42, 0.06);
   --hp-scrollbar-thumb: color-mix(in srgb, var(--hp-accent) 30%, rgba(148, 163, 184, 0.35));
   --hp-scrollbar-thumb-hover: color-mix(in srgb, var(--hp-accent) 46%, rgba(248, 250, 252, 0.45));
-  --hp-font-family: "Space Grotesk";
+  --hp-font-family: "DM Sans";
+  --hp-font-display: "Fraunces";
   --hp-radius: 0.75rem;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html,
@@ -23,23 +36,24 @@ body {
   min-height: 100%;
 }
 
-* {
-  box-sizing: border-box;
-}
-
 body {
-  margin: 0;
   background:
-    radial-gradient(90rem 36rem at 10% -10%, color-mix(in srgb, var(--hp-accent) 16%, transparent), transparent 60%),
+    radial-gradient(90rem 36rem at 10% -10%,
+      color-mix(in srgb, var(--hp-accent) 12%, transparent),
+      transparent 60%),
+    radial-gradient(60rem 40rem at -5% 30%,
+      color-mix(in srgb, #1A3A6B 40%, transparent),
+      transparent 55%),
     linear-gradient(145deg, var(--hp-bg-start), var(--hp-bg-end));
   color: var(--hp-text);
-  font-family: var(--hp-font-family), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--hp-font-family), 'Space Grotesk', ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 html {
   scrollbar-gutter: stable;
 }
 
+/* ── scrollbar ── */
 * {
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
@@ -92,8 +106,268 @@ textarea {
   border-radius: var(--hp-radius);
 }
 
-.rounded-md,
-.rounded-lg,
-.rounded-xl {
-  border-radius: var(--hp-radius) !important;
+/* ── ambient particles ── */
+.hp-particles {
+  position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0;
+}
+.hp-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--hp-accent);
+  opacity: 0;
+  animation: hp-drift var(--d, 12s) ease-in-out infinite var(--delay, 0s);
+}
+@keyframes hp-drift {
+  0%   { transform: translateY(110vh) scale(0.4); opacity: 0; }
+  15%  { opacity: 0.12; }
+  85%  { opacity: 0.08; }
+  100% { transform: translateY(-12vh) scale(1); opacity: 0; }
+}
+
+/* ── decorative rings ── */
+.hp-deco-ring {
+  position: fixed;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--hp-accent) 10%, transparent);
+  pointer-events: none;
+  z-index: 0;
+  animation: hp-spin var(--s, 40s) linear infinite;
+}
+.hp-deco-ring:nth-child(1) { width: 520px; height: 520px; top: -180px; right: -160px; --s: 55s; }
+.hp-deco-ring:nth-child(2) { width: 340px; height: 340px; top: -80px; right: -60px; --s: 35s; animation-direction: reverse; }
+.hp-deco-ring:nth-child(3) { width: 200px; height: 200px; bottom: -60px; left: -60px; --s: 28s; }
+@keyframes hp-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── glassmorphic card ── */
+.hp-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--hp-surface);
+  border: 1px solid var(--hp-border);
+  border-radius: 24px;
+  padding: 2.6rem 2.4rem 2.4rem;
+  backdrop-filter: blur(28px) saturate(1.4);
+  -webkit-backdrop-filter: blur(28px) saturate(1.4);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 32px 64px rgba(0,0,0,0.5),
+    0 0 80px var(--hp-glow);
+  animation: hp-cardIn 0.7s cubic-bezier(0.22,1,0.36,1) both;
+}
+@keyframes hp-cardIn {
+  from { opacity: 0; transform: translateY(28px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── brand logo ── */
+.hp-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  animation: hp-fadeUp 0.6s 0.15s cubic-bezier(0.22,1,0.36,1) both;
+}
+.hp-brand-icon {
+  width: 42px; height: 42px;
+  background: linear-gradient(135deg, var(--hp-accent), var(--hp-accent-dim));
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 18px rgba(91,141,239,0.4);
+  flex-shrink: 0;
+}
+.hp-brand-icon svg { width: 22px; height: 22px; fill: #fff; }
+.hp-brand-name {
+  font-family: var(--hp-font-display), serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.hp-brand-name span { color: var(--hp-accent-soft); }
+.hp-brand-tagline {
+  font-size: 0.72rem;
+  color: var(--hp-text-muted);
+  margin-top: 3px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── headings ── */
+.hp-heading {
+  margin-bottom: 0.35rem;
+  font-family: var(--hp-font-display), serif;
+  font-size: 1.85rem;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  animation: hp-fadeUp 0.6s 0.22s cubic-bezier(0.22,1,0.36,1) both;
+}
+.hp-heading em { font-style: italic; color: var(--hp-accent-soft); }
+.hp-subheading {
+  font-size: 0.875rem;
+  color: var(--hp-text-muted);
+  margin-bottom: 2rem;
+  animation: hp-fadeUp 0.6s 0.28s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+/* ── form styles ── */
+.hp-form {
+  animation: hp-fadeUp 0.6s 0.34s cubic-bezier(0.22,1,0.36,1) both;
+}
+.hp-field {
+  margin-bottom: 1.05rem;
+}
+.hp-field label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--hp-text-muted);
+  margin-bottom: 0.45rem;
+}
+.hp-input-wrap {
+  position: relative;
+}
+.hp-input-wrap .hp-input-icon {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  width: 16px; height: 16px;
+  color: var(--hp-text-muted);
+  pointer-events: none;
+  transition: color 0.2s;
+}
+.hp-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  background: var(--hp-input-bg);
+  border: 1px solid var(--hp-border);
+  border-radius: 12px !important;
+  color: var(--hp-text);
+  font-family: var(--hp-font-family), sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+}
+.hp-input::placeholder {
+  color: var(--hp-text-muted);
+}
+.hp-input:focus {
+  border-color: color-mix(in srgb, var(--hp-accent) 55%, transparent);
+  background: rgba(10,6,3,0.6);
+  box-shadow: 0 0 0 3px var(--hp-glow);
+}
+.hp-input:focus ~ .hp-input-icon,
+.hp-input-wrap:focus-within .hp-input-icon {
+  color: var(--hp-accent-soft);
+}
+
+/* ── eye toggle ── */
+.hp-eye-btn {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer;
+  color: var(--hp-text-muted);
+  padding: 4px;
+  border-radius: 6px !important;
+  transition: color 0.2s;
+}
+.hp-eye-btn:hover { color: var(--hp-text); }
+.hp-eye-btn svg { width: 17px; height: 17px; display: block; }
+
+/* ── primary CTA ── */
+.hp-btn-primary {
+  width: 100%;
+  padding: 0.85rem;
+  background: linear-gradient(135deg, var(--hp-accent) 0%, var(--hp-accent-dim) 100%);
+  color: #fff;
+  font-family: var(--hp-font-family), sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 13px !important;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.18s, box-shadow 0.18s;
+  box-shadow: 0 4px 20px rgba(91,141,239,0.35);
+  letter-spacing: 0.01em;
+}
+.hp-btn-primary::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.hp-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(91,141,239,0.5);
+}
+.hp-btn-primary:hover::before { opacity: 1; }
+.hp-btn-primary:active { transform: translateY(0); }
+.hp-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ── card footer link ── */
+.hp-card-footer {
+  margin-top: 1.6rem;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--hp-text-muted);
+  animation: hp-fadeUp 0.6s 0.45s cubic-bezier(0.22,1,0.36,1) both;
+}
+.hp-card-footer a {
+  color: var(--hp-accent-soft);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.hp-card-footer a:hover { color: var(--hp-text); }
+
+/* ── status pill ── */
+.hp-status-pill {
+  position: fixed;
+  bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  background: var(--hp-surface);
+  border: 1px solid var(--hp-border);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: var(--hp-text-muted);
+  backdrop-filter: blur(16px);
+  animation: hp-fadeUp 0.6s 0.6s cubic-bezier(0.22,1,0.36,1) both;
+  white-space: nowrap;
+  z-index: 50;
+}
+.hp-status-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #5bdb8a;
+  box-shadow: 0 0 6px #5bdb8a;
+  animation: hp-pulse 2s ease-in-out infinite;
+}
+@keyframes hp-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+/* ── error box ── */
+.hp-error {
+  margin-top: 1rem;
+  padding: 0.65rem 0.9rem;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: 12px;
+  font-size: 0.82rem;
+  color: #f87171;
+}
+
+@keyframes hp-fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

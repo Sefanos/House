@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 import { normalizeClientErrorMessage, validateRegistrationInput } from "@/lib/errors";
 import {
   assertSession,
@@ -11,12 +12,14 @@ import {
   isSessionError,
   type ReducerResult
 } from "@/lib/spacetime";
+import { HouseBrand } from "@/components/ui/AmbientBackground";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [result, setResult] = useState<ReducerResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPwd, setShowPwd] = useState(false);
 
   useEffect(() => {
     let disposed = false;
@@ -68,57 +71,100 @@ export default function RegisterPage() {
   }
 
   return (
-    <section className="space-y-4 rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-      <h1 className="text-xl font-semibold">Register</h1>
-      <p className="text-sm text-slate-300">Create your account to enter Houseplan.</p>
-      <form onSubmit={onSubmit} className="grid gap-3">
-        <label htmlFor="username" className="text-xs uppercase tracking-wide text-slate-400">
-          Username
-        </label>
-        <input
-          id="username"
-          name="username"
-          required
-          minLength={3}
-          maxLength={24}
-          pattern="[A-Za-z0-9_]+"
-          title="Use 3-24 characters: letters, numbers, underscores."
-          autoComplete="username"
-          className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
-        />
-        <label htmlFor="password" className="text-xs uppercase tracking-wide text-slate-400">
-          Password
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          required
-          minLength={8}
-          maxLength={128}
-          autoComplete="new-password"
-          className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
-        />
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="rounded-md bg-sky-500 px-3 py-2 text-sm font-medium text-slate-950 hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          {isSubmitting ? "Registering..." : "Register"}
-        </button>
-      </form>
+    <div className="hp-card">
+      <HouseBrand />
 
-      {error ? (
-        <p className="text-sm text-rose-300">
-          Error: <span className="text-rose-400">{error}</span>
-        </p>
-      ) : null}
+      <h1 className="hp-heading">
+        Build your <em>room</em>,<br />make it yours.
+      </h1>
+      <p className="hp-subheading">
+        Create an account to start decorating your cozy corner.
+      </p>
 
-      {result ? (
-        <pre className="rounded-md bg-slate-950 p-3 text-xs text-slate-300">
-          {JSON.stringify(result, null, 2)}
-        </pre>
-      ) : null}
-    </section>
+      <div className="hp-form">
+        <form onSubmit={onSubmit}>
+          <div className="hp-field">
+            <label htmlFor="username">Username</label>
+            <div className="hp-input-wrap">
+              <input
+                id="username"
+                name="username"
+                type="text"
+                required
+                minLength={3}
+                maxLength={24}
+                pattern="[A-Za-z0-9_]+"
+                title="Use 3-24 characters: letters, numbers, underscores."
+                autoComplete="username"
+                placeholder="choose a cozy name"
+                className="hp-input"
+              />
+              <svg className="hp-input-icon" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
+              </svg>
+            </div>
+          </div>
+
+          <div className="hp-field">
+            <label htmlFor="password">Password</label>
+            <div className="hp-input-wrap">
+              <input
+                id="password"
+                name="password"
+                type={showPwd ? "text" : "password"}
+                required
+                minLength={8}
+                maxLength={128}
+                autoComplete="new-password"
+                placeholder="min 8 characters"
+                className="hp-input"
+              />
+              <svg className="hp-input-icon" viewBox="0 0 20 20" fill="currentColor">
+                <path
+                  fillRule="evenodd"
+                  d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <button
+                type="button"
+                className="hp-eye-btn"
+                onClick={() => setShowPwd(!showPwd)}
+                aria-label="Toggle password"
+              >
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+                  <path d="M1 10s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z" />
+                  <circle cx="10" cy="10" r="2.5" />
+                  {showPwd && <line x1="2" y1="2" x2="18" y2="18" strokeWidth="1.8" />}
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div style={{ marginTop: "1.5rem" }}>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="hp-btn-primary"
+            >
+              {isSubmitting ? "Building your room..." : "🏠  Move in"}
+            </button>
+          </div>
+        </form>
+
+        {error && <div className="hp-error">{error}</div>}
+
+        {result && (
+          <pre style={{ marginTop: "1rem", padding: "0.75rem", fontSize: "0.75rem", background: "rgba(0,0,0,0.3)", borderRadius: 12, color: "var(--hp-text-muted)", overflowX: "auto" }}>
+            {JSON.stringify(result, null, 2)}
+          </pre>
+        )}
+      </div>
+
+      <p className="hp-card-footer">
+        Already have a room?{" "}
+        <Link href="/login">Step back inside →</Link>
+      </p>
+    </div>
   );
 }

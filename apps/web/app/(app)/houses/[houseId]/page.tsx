@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { usePresignedUploadQuery } from "@/hooks/query/usePresignedUploadQuery";
 import { useBadges } from "@/hooks/spacetime/useBadges";
 import { useHouseBans } from "@/hooks/spacetime/useHouseBans";
 import { useHouseMembers } from "@/hooks/spacetime/useHouseMembers";
@@ -59,6 +60,11 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
   const [roleError, setRoleError] = useState<string | null>(null);
   const [badgeError, setBadgeError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  const presignMutation = usePresignedUploadQuery();
+  const [iconFile, setIconFile] = useState<File | null>(null);
+  const [iconPreviewUrl, setIconPreviewUrl] = useState<string | null>(null);
+  const [isDraggingIcon, setIsDraggingIcon] = useState(false);
 
   const access = useMemo(() => resolveHouseAccess({ hasPermission, isOwner }), [hasPermission, isOwner]);
 
@@ -135,14 +141,21 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
     return map;
   }, [badgeById, params.houseId, userBadges]);
 
+  useEffect(() => {
+    if (house?.iconUrl) {
+      setIconPreviewUrl(house.iconUrl);
+    }
+  }, [house?.iconUrl]);
+
   async function onUpdateHouse(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!house) return;
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const name = String(formData.get("name") ?? "");
     const description = String(formData.get("description") ?? "");
-    const iconUrl = String(formData.get("iconUrl") ?? "");
+    let iconUrl = String(formData.get("iconUrl") ?? "");
     const isPublic = formData.get("isPublic") === "on";
     const themeId = String(formData.get("themeId") ?? "");
     const accentColor = String(formData.get("accentColor") ?? "");
@@ -151,6 +164,21 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
     setUpdateError(null);
     setStatusMessage(null);
     try {
+      if (iconFile) {
+        const { uploadUrl, publicUrl } = await presignMutation.mutateAsync({
+          fileName: iconFile.name,
+          contentType: iconFile.type,
+          sizeBytes: iconFile.size
+        });
+        const uploadResponse = await fetch(uploadUrl, {
+          method: "PUT",
+          body: iconFile,
+          headers: { "Content-Type": iconFile.type }
+        });
+        if (!uploadResponse.ok) throw new Error("Failed to upload house icon.");
+        if (publicUrl) iconUrl = publicUrl;
+      }
+
       await invokeHouseReducer("house.updateHouse", {
         houseId: house.id,
         name,
@@ -161,6 +189,7 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
         accentColor
       });
       setStatusMessage("House updated.");
+      setIconFile(null); // Keep preview URL but clear file state
     } catch (nextError) {
       setUpdateError(nextError instanceof Error ? nextError.message : "Failed to update house.");
     } finally {
@@ -172,7 +201,8 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
     event.preventDefault();
     if (!house) return;
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const userId = String(formData.get("userId") ?? "");
     const badgeName = String(formData.get("badgeName") ?? "");
     const badgeIcon = String(formData.get("badgeIcon") ?? "");
@@ -190,7 +220,7 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
         badgeType: badgeType === "earned" || badgeType === "achievement" ? badgeType : "house"
       });
       setStatusMessage("Badge granted.");
-      event.currentTarget.reset();
+      form.reset();
     } catch (nextError) {
       setBadgeError(nextError instanceof Error ? nextError.message : "Failed to grant badge.");
     } finally {
@@ -202,7 +232,8 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
     event.preventDefault();
     if (!house) return;
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const userId = String(formData.get("userId") ?? "");
     const badgeId = String(formData.get("badgeId") ?? "");
 
@@ -216,7 +247,7 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
         badgeId
       });
       setStatusMessage("Badge revoked.");
-      event.currentTarget.reset();
+      form.reset();
     } catch (nextError) {
       setBadgeError(nextError instanceof Error ? nextError.message : "Failed to revoke badge.");
     } finally {
@@ -243,7 +274,8 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
     event.preventDefault();
     if (!house) return;
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const maxUsesValue = String(formData.get("maxUses") ?? "").trim();
     const expiresInHoursValue = String(formData.get("expiresInHours") ?? "").trim();
 
@@ -257,7 +289,7 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
         expiresInHours: expiresInHoursValue ? Number(expiresInHoursValue) : undefined
       });
       setStatusMessage("Invite created.");
-      event.currentTarget.reset();
+      form.reset();
     } catch (nextError) {
       setInviteError(nextError instanceof Error ? nextError.message : "Failed to create invite.");
     } finally {
@@ -288,7 +320,8 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
     event.preventDefault();
     if (!house) return;
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const userId = String(formData.get("memberUserId") ?? "");
     if (!userId) return;
 
@@ -301,7 +334,7 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
         userId
       });
       setStatusMessage("Member removed.");
-      event.currentTarget.reset();
+      form.reset();
     } catch (nextError) {
       setKickError(nextError instanceof Error ? nextError.message : "Failed to remove member.");
     } finally {
@@ -313,7 +346,8 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
     event.preventDefault();
     if (!house) return;
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const userId = String(formData.get("banUserId") ?? "");
     const reason = String(formData.get("banReason") ?? "");
     if (!userId) return;
@@ -328,7 +362,7 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
         reason
       });
       setStatusMessage("Member banned.");
-      event.currentTarget.reset();
+      form.reset();
     } catch (nextError) {
       setBanError(nextError instanceof Error ? nextError.message : "Failed to ban member.");
     } finally {
@@ -340,7 +374,8 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
     event.preventDefault();
     if (!house) return;
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const userId = String(formData.get("unbanUserId") ?? "");
     if (!userId) return;
 
@@ -353,7 +388,7 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
         userId
       });
       setStatusMessage("Member unbanned.");
-      event.currentTarget.reset();
+      form.reset();
     } catch (nextError) {
       setBanError(nextError instanceof Error ? nextError.message : "Failed to unban member.");
     } finally {
@@ -365,7 +400,8 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
     event.preventDefault();
     if (!house) return;
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const name = String(formData.get("roleName") ?? "");
     const color = String(formData.get("roleColor") ?? "");
     const permissions = String(formData.get("rolePermissions") ?? "0");
@@ -383,7 +419,7 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
         position: positionValue ? Number(positionValue) : undefined
       });
       setStatusMessage("Role created.");
-      event.currentTarget.reset();
+      form.reset();
     } catch (nextError) {
       setRoleError(nextError instanceof Error ? nextError.message : "Failed to create role.");
     } finally {
@@ -438,7 +474,8 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
     event.preventDefault();
     if (!house) return;
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const userId = String(formData.get("assignUserId") ?? "");
     const roleId = String(formData.get("assignRoleId") ?? "");
 
@@ -452,7 +489,7 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
         roleId
       });
       setStatusMessage("Role assigned.");
-      event.currentTarget.reset();
+      form.reset();
     } catch (nextError) {
       setRoleError(nextError instanceof Error ? nextError.message : "Failed to assign role.");
     } finally {
@@ -464,7 +501,8 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
     event.preventDefault();
     if (!house) return;
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const userId = String(formData.get("revokeUserId") ?? "");
     const roleId = String(formData.get("revokeRoleId") ?? "");
 
@@ -478,7 +516,7 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
         roleId
       });
       setStatusMessage("Role revoked.");
-      event.currentTarget.reset();
+      form.reset();
     } catch (nextError) {
       setRoleError(nextError instanceof Error ? nextError.message : "Failed to revoke role.");
     } finally {
@@ -644,16 +682,56 @@ export default function HouseLandingPage({ params }: HouseLandingPageProps) {
             />
           </div>
           <div className="space-y-1">
-            <label htmlFor="iconUrl" className="text-xs uppercase tracking-wide text-slate-400">
-              Icon URL
-            </label>
-            <input
-              id="iconUrl"
-              name="iconUrl"
-              maxLength={512}
-              defaultValue={house.iconUrl}
-              className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
-            />
+            <span className="text-xs uppercase tracking-wide text-slate-400">Icon</span>
+            <div
+              onDragOver={(e) => { e.preventDefault(); setIsDraggingIcon(true); }}
+              onDragLeave={(e) => { e.preventDefault(); setIsDraggingIcon(false); }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDraggingIcon(false);
+                const file = e.dataTransfer.files?.[0];
+                if (file && file.type.startsWith("image/")) {
+                  setIconFile(file);
+                  setIconPreviewUrl(URL.createObjectURL(file));
+                }
+              }}
+              className={`relative flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed p-6 transition-colors ${
+                isDraggingIcon 
+                  ? "border-sky-500 bg-sky-500/10" 
+                  : "border-slate-700 bg-slate-950/50 hover:bg-slate-900"
+              }`}
+            >
+              <input 
+                type="hidden" 
+                name="iconUrl"
+                value={house.iconUrl || ""}
+              />
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file && file.type.startsWith("image/")) {
+                    setIconFile(file);
+                    setIconPreviewUrl(URL.createObjectURL(file));
+                  }
+                }}
+                className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+              />
+              {iconPreviewUrl ? (
+                <div className="flex flex-col items-center gap-3 relative z-20">
+                  <img src={iconPreviewUrl} alt="House Icon Preview" className="h-16 w-16 rounded-2xl object-cover" />
+                  <span className="text-xs text-sky-400">Change icon</span>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2 text-slate-400 relative z-20">
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                  </svg>
+                  <span className="text-xs font-medium">Click or drag image here</span>
+                </div>
+              )}
+            </div>
           </div>
           <div className="space-y-1">
             <label htmlFor="themeId" className="text-xs uppercase tracking-wide text-slate-400">
