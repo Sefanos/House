@@ -72,6 +72,7 @@ services:
     container_name: houseplan-web
     environment:
       NODE_ENV: production
+      PORT: 3001
       NEXT_PUBLIC_SPACETIME_URL: ${NEXT_PUBLIC_SPACETIME_URL}
       NEXT_PUBLIC_SPACETIME_MODULE: ${NEXT_PUBLIC_SPACETIME_MODULE}
       NEXT_PUBLIC_LIVEKIT_URL: ${NEXT_PUBLIC_LIVEKIT_URL}

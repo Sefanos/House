@@ -27,6 +27,7 @@ RUN mkdir -p /tmp/web-public && if [ -d /app/apps/web/public ]; then cp -R /app/
 FROM node:20-bookworm-slim AS runner
 
 ENV NODE_ENV=production
+ENV PORT=3001
 
 WORKDIR /app
 
