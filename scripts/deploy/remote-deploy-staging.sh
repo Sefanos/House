@@ -40,6 +40,9 @@ mkdir -p infra/livekit scripts/deploy
 
 echo "${GHCR_TOKEN}" | docker login ghcr.io -u "${GHCR_USERNAME}" --password-stdin
 
+echo "[staging] resetting existing containers and volumes"
+docker compose -f docker-compose.staging.yml down -v || true
+
 docker compose --profile jobs -f docker-compose.staging.yml pull
 docker compose -f docker-compose.staging.yml up -d spacetimedb redis livekit web
 docker compose --profile jobs -f docker-compose.staging.yml run --rm spacetime-publisher
