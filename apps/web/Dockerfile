@@ -22,6 +22,7 @@ ENV NEXT_PUBLIC_LIVEKIT_URL=$NEXT_PUBLIC_LIVEKIT_URL
 ENV NEXT_PUBLIC_GIPHY_API_KEY=$NEXT_PUBLIC_GIPHY_API_KEY
 
 RUN pnpm --filter @houseplan/web build
+RUN mkdir -p /tmp/web-public && if [ -d /app/apps/web/public ]; then cp -R /app/apps/web/public/. /tmp/web-public/; fi
 
 FROM node:20-bookworm-slim AS runner
 
@@ -31,7 +32,7 @@ WORKDIR /app
 
 COPY --from=builder /app/apps/web/.next/standalone ./
 COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
-COPY --from=builder /app/apps/web/public ./apps/web/public
+COPY --from=builder /tmp/web-public ./apps/web/public
 
 EXPOSE 3001
 
