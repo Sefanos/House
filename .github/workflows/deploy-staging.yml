@@ -74,8 +74,34 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Validate deploy SSH settings
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          DEPLOY_PORT="${DEPLOY_PORT:-22}"
+
+          if [ -z "${DEPLOY_HOST}" ]; then
+            echo "Missing required secret: DEPLOY_HOST" >&2
+            exit 1
+          fi
+
+          if [ -z "${DEPLOY_USER}" ]; then
+            echo "Missing required secret: DEPLOY_USER" >&2
+            exit 1
+          fi
+
+          case "$DEPLOY_PORT" in
+            ''|*[!0-9]*)
+              echo "DEPLOY_PORT must be numeric. Current value is invalid." >&2
+              exit 1
+              ;;
+          esac
+
       - name: Configure SSH
         env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
         run: |
           install -m 700 -d ~/.ssh
@@ -170,11 +196,12 @@ jobs:
         run: |
           DEPLOY_PORT="${DEPLOY_PORT:-22}"
           DEPLOY_ROOT="${DEPLOY_ROOT:-/opt/houseplan-staging}"
-          ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$DEPLOY_ROOT/infra/livekit' '$DEPLOY_ROOT/scripts/deploy'"
-          scp -P "$DEPLOY_PORT" .deploy/docker-compose.staging.yml "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_ROOT/docker-compose.staging.yml"
-          scp -P "$DEPLOY_PORT" .deploy/.env "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_ROOT/.env"
-          scp -P "$DEPLOY_PORT" .deploy/infra/livekit/livekit.staging.yaml "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_ROOT/infra/livekit/livekit.staging.yaml"
-          scp -P "$DEPLOY_PORT" .deploy/scripts/deploy/remote-deploy-staging.sh "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_ROOT/scripts/deploy/remote-deploy-staging.sh"
+          SSH_TARGET="${DEPLOY_USER}@${DEPLOY_HOST}"
+          ssh -p "$DEPLOY_PORT" "$SSH_TARGET" "mkdir -p '$DEPLOY_ROOT/infra/livekit' '$DEPLOY_ROOT/scripts/deploy'"
+          scp -P "$DEPLOY_PORT" .deploy/docker-compose.staging.yml "$SSH_TARGET:$DEPLOY_ROOT/docker-compose.staging.yml"
+          scp -P "$DEPLOY_PORT" .deploy/.env "$SSH_TARGET:$DEPLOY_ROOT/.env"
+          scp -P "$DEPLOY_PORT" .deploy/infra/livekit/livekit.staging.yaml "$SSH_TARGET:$DEPLOY_ROOT/infra/livekit/livekit.staging.yaml"
+          scp -P "$DEPLOY_PORT" .deploy/scripts/deploy/remote-deploy-staging.sh "$SSH_TARGET:$DEPLOY_ROOT/scripts/deploy/remote-deploy-staging.sh"
 
       - name: Run staging deploy
         env:
@@ -185,7 +212,8 @@ jobs:
         run: |
           DEPLOY_PORT="${DEPLOY_PORT:-22}"
           DEPLOY_ROOT="${DEPLOY_ROOT:-/opt/houseplan-staging}"
-          ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "chmod +x '$DEPLOY_ROOT/scripts/deploy/remote-deploy-staging.sh' && DEPLOY_ROOT='$DEPLOY_ROOT' '$DEPLOY_ROOT/scripts/deploy/remote-deploy-staging.sh'"
+          SSH_TARGET="${DEPLOY_USER}@${DEPLOY_HOST}"
+          ssh -p "$DEPLOY_PORT" "$SSH_TARGET" "chmod +x '$DEPLOY_ROOT/scripts/deploy/remote-deploy-staging.sh' && DEPLOY_ROOT='$DEPLOY_ROOT' '$DEPLOY_ROOT/scripts/deploy/remote-deploy-staging.sh'"
 
       - name: Verify staging health
         run: curl --fail --silent --show-error --retry 10 --retry-delay 5 --retry-connrefused "http://${{ secrets.STAGING_HOST }}:3001/api/health"
