@@ -101,6 +101,8 @@ services:
     environment:
       SPACETIME_SERVER_URL: ${SPACETIME_SERVER_URL}
       SPACETIME_MODULE_NAME: ${SPACETIME_MODULE_NAME}
+    volumes:
+      - spacetime_cli_data:/root/.local/share/spacetime
     depends_on:
       - spacetimedb
     restart: "no"
@@ -109,4 +111,5 @@ services:
 
 volumes:
   spacetimedb_data:
+  spacetime_cli_data:
   web_uploads:
