@@ -8,7 +8,8 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates curl \
   && rm -rf /var/lib/apt/lists/* \
   && corepack enable \
-  && curl -sSf https://install.spacetimedb.com | sh
+  && mkdir -p /var/tmp/spacetime-installer \
+  && TMPDIR=/var/tmp/spacetime-installer sh -c 'curl -sSf https://install.spacetimedb.com | sh -s -- -y'
 
 WORKDIR /app
 
