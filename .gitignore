@@ -9,7 +9,11 @@ dist
 coverage
 
 .env
-.env.local
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
 *.log
 
 .DS_Store

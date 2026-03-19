@@ -1,0 +1,23 @@
+FROM node:20-bookworm-slim
+
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+ENV PATH=/root/.local/bin:$PATH
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates curl \
+  && rm -rf /var/lib/apt/lists/* \
+  && corepack enable \
+  && curl -sSf https://install.spacetimedb.com | sh
+
+WORKDIR /app
+
+COPY . .
+
+RUN pnpm install --frozen-lockfile
+
+COPY scripts/deploy/publish-spacetime.sh /usr/local/bin/publish-spacetime
+
+RUN chmod +x /usr/local/bin/publish-spacetime
+
+CMD ["publish-spacetime"]

@@ -1,0 +1,75 @@
+services:
+  spacetimedb:
+    image: clockworklabs/spacetime:latest
+    container_name: houseplan-staging-spacetimedb
+    command:
+      - start
+      - --listen-addr
+      - 0.0.0.0:3000
+      - --non-interactive
+    ports:
+      - "3000:3000"
+    volumes:
+      - spacetimedb_data:/root/.local/share/spacetime
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: houseplan-staging-redis
+    restart: unless-stopped
+
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: houseplan-staging-livekit
+    command:
+      - --config
+      - /etc/livekit/livekit.yaml
+    ports:
+      - "7880:7880/tcp"
+      - "7881:7881/tcp"
+      - "50000-50100:50000-50100/udp"
+    volumes:
+      - ./infra/livekit/livekit.staging.yaml:/etc/livekit/livekit.yaml:ro
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  web:
+    image: ${WEB_IMAGE}
+    container_name: houseplan-staging-web
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_SPACETIME_URL: ${NEXT_PUBLIC_SPACETIME_URL}
+      NEXT_PUBLIC_SPACETIME_MODULE: ${NEXT_PUBLIC_SPACETIME_MODULE}
+      NEXT_PUBLIC_LIVEKIT_URL: ${NEXT_PUBLIC_LIVEKIT_URL}
+      NEXT_PUBLIC_GIPHY_API_KEY: ${NEXT_PUBLIC_GIPHY_API_KEY}
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
+      R2_ACCOUNT_ID: ${R2_ACCOUNT_ID}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
+      R2_BUCKET_NAME: ${R2_BUCKET_NAME}
+      R2_PUBLIC_URL: ${R2_PUBLIC_URL}
+    ports:
+      - "3001:3001"
+    volumes:
+      - web_uploads:/app/apps/web/public/uploads
+    depends_on:
+      - spacetimedb
+      - livekit
+    restart: unless-stopped
+
+  spacetime-publisher:
+    image: ${SPACETIME_PUBLISHER_IMAGE}
+    environment:
+      SPACETIME_SERVER_URL: ${SPACETIME_SERVER_URL}
+      SPACETIME_MODULE_NAME: ${SPACETIME_MODULE_NAME}
+    depends_on:
+      - spacetimedb
+    restart: "no"
+    profiles:
+      - jobs
+
+volumes:
+  spacetimedb_data:
+  web_uploads:

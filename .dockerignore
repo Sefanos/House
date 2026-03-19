@@ -1,0 +1,13 @@
+.git
+.github
+.next
+.pnpm-store
+.turbo
+Docs
+coverage
+dist
+node_modules
+*.log
+.env
+.env.local
+.env.production

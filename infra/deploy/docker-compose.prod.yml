@@ -1,0 +1,112 @@
+services:
+  traefik:
+    image: traefik:v3.3
+    container_name: houseplan-traefik
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --certificatesresolvers.letsencrypt.acme.email=${TRAEFIK_ACME_EMAIL}
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+      - --log.level=INFO
+      - --accesslog=true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/acme.json:/letsencrypt/acme.json
+    restart: unless-stopped
+
+  spacetimedb:
+    image: clockworklabs/spacetime:latest
+    container_name: houseplan-spacetimedb
+    command:
+      - start
+      - --listen-addr
+      - 0.0.0.0:3000
+      - --non-interactive
+    volumes:
+      - spacetimedb_data:/root/.local/share/spacetime
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.houseplan-spacetimedb.rule=Host(`${SPACETIME_DOMAIN}`)
+      - traefik.http.routers.houseplan-spacetimedb.entrypoints=websecure
+      - traefik.http.routers.houseplan-spacetimedb.tls.certresolver=letsencrypt
+      - traefik.http.services.houseplan-spacetimedb.loadbalancer.server.port=3000
+
+  redis:
+    image: redis:7-alpine
+    container_name: houseplan-redis
+    restart: unless-stopped
+
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: houseplan-livekit
+    command:
+      - --config
+      - /etc/livekit/livekit.yaml
+    ports:
+      - "7881:7881/tcp"
+      - "50000-50100:50000-50100/udp"
+    volumes:
+      - ./infra/livekit/livekit.prod.yaml:/etc/livekit/livekit.yaml:ro
+    depends_on:
+      - redis
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.houseplan-livekit.rule=Host(`${LIVEKIT_DOMAIN}`)
+      - traefik.http.routers.houseplan-livekit.entrypoints=websecure
+      - traefik.http.routers.houseplan-livekit.tls.certresolver=letsencrypt
+      - traefik.http.services.houseplan-livekit.loadbalancer.server.port=7880
+
+  web:
+    image: ${WEB_IMAGE}
+    container_name: houseplan-web
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_SPACETIME_URL: ${NEXT_PUBLIC_SPACETIME_URL}
+      NEXT_PUBLIC_SPACETIME_MODULE: ${NEXT_PUBLIC_SPACETIME_MODULE}
+      NEXT_PUBLIC_LIVEKIT_URL: ${NEXT_PUBLIC_LIVEKIT_URL}
+      NEXT_PUBLIC_GIPHY_API_KEY: ${NEXT_PUBLIC_GIPHY_API_KEY}
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
+      R2_ACCOUNT_ID: ${R2_ACCOUNT_ID}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
+      R2_BUCKET_NAME: ${R2_BUCKET_NAME}
+      R2_PUBLIC_URL: ${R2_PUBLIC_URL}
+    volumes:
+      - web_uploads:/app/apps/web/public/uploads
+    depends_on:
+      - spacetimedb
+      - livekit
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.houseplan-web.rule=Host(`${APP_DOMAIN}`)
+      - traefik.http.routers.houseplan-web.entrypoints=websecure
+      - traefik.http.routers.houseplan-web.tls.certresolver=letsencrypt
+      - traefik.http.services.houseplan-web.loadbalancer.server.port=3001
+
+  spacetime-publisher:
+    image: ${SPACETIME_PUBLISHER_IMAGE}
+    environment:
+      SPACETIME_SERVER_URL: ${SPACETIME_SERVER_URL}
+      SPACETIME_MODULE_NAME: ${SPACETIME_MODULE_NAME}
+    depends_on:
+      - spacetimedb
+    restart: "no"
+    profiles:
+      - jobs
+
+volumes:
+  spacetimedb_data:
+  web_uploads:

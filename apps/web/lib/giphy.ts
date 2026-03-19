@@ -10,12 +10,22 @@ export type GifOption = {
   stillUrl: string;
 };
 
-const DEFAULT_GIPHY_API_KEY = "29OYHAN3zAHeLHolt92JHSPHhtuXoUGd";
 const GIPHY_RESULTS_LIMIT = 18;
 const GIPHY_RELATED_LIMIT = 9;
 const GIPHY_RATING = "pg-13" as const;
 
-export const giphyFetch = new GiphyFetch(process.env.NEXT_PUBLIC_GIPHY_API_KEY ?? DEFAULT_GIPHY_API_KEY);
+function getGiphyApiKey(): string {
+  const apiKey = process.env.NEXT_PUBLIC_GIPHY_API_KEY?.trim();
+  if (!apiKey) {
+    throw new Error("GIF search is disabled. Set NEXT_PUBLIC_GIPHY_API_KEY to enable GIPHY.");
+  }
+
+  return apiKey;
+}
+
+function getGiphyFetch(): GiphyFetch {
+  return new GiphyFetch(getGiphyApiKey());
+}
 
 function firstNonEmpty(...values: Array<string | undefined>): string {
   for (const value of values) {
@@ -77,7 +87,7 @@ function normalizeGifList(gifs: IGif[]): GifOption[] {
 }
 
 export async function fetchTrendingGifs(limit = GIPHY_RESULTS_LIMIT): Promise<GifOption[]> {
-  const { data } = await giphyFetch.trending({
+  const { data } = await getGiphyFetch().trending({
     type: "gifs",
     rating: GIPHY_RATING,
     limit
@@ -87,7 +97,7 @@ export async function fetchTrendingGifs(limit = GIPHY_RESULTS_LIMIT): Promise<Gi
 }
 
 export async function searchGifs(query: string, limit = GIPHY_RESULTS_LIMIT): Promise<GifOption[]> {
-  const { data } = await giphyFetch.search(query, {
+  const { data } = await getGiphyFetch().search(query, {
     type: "gifs",
     rating: GIPHY_RATING,
     sort: "relevant",
@@ -98,7 +108,7 @@ export async function searchGifs(query: string, limit = GIPHY_RESULTS_LIMIT): Pr
 }
 
 export async function fetchRelatedGifs(gifId: string, limit = GIPHY_RELATED_LIMIT): Promise<GifOption[]> {
-  const { data } = await giphyFetch.related(gifId, {
+  const { data } = await getGiphyFetch().related(gifId, {
     type: "gifs",
     rating: GIPHY_RATING,
     limit
