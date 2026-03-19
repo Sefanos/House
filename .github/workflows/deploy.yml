@@ -103,9 +103,20 @@ jobs:
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          DEPLOY_SSH_PRIVATE_KEY_B64: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY_B64 }}
         run: |
           install -m 700 -d ~/.ssh
-          printf '%s' '${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}' | tr -d '\r' > ~/.ssh/id_ed25519
+
+          if [ -n "${DEPLOY_SSH_PRIVATE_KEY_B64}" ]; then
+            printf '%s' "${DEPLOY_SSH_PRIVATE_KEY_B64}" | base64 -d > ~/.ssh/id_ed25519
+          elif [ -n "${DEPLOY_SSH_PRIVATE_KEY}" ]; then
+            printf '%s' "${DEPLOY_SSH_PRIVATE_KEY}" | tr -d '\r' > ~/.ssh/id_ed25519
+          else
+            echo "Missing required secret: DEPLOY_SSH_PRIVATE_KEY or DEPLOY_SSH_PRIVATE_KEY_B64" >&2
+            exit 1
+          fi
+
           chmod 600 ~/.ssh/id_ed25519
           ssh-keygen -y -f ~/.ssh/id_ed25519 > /dev/null
           ssh-keyscan -p "${DEPLOY_PORT:-22}" -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
