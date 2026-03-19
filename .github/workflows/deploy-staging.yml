@@ -227,5 +227,22 @@ jobs:
           SSH_TARGET="${DEPLOY_USER}@${DEPLOY_HOST}"
           ssh -p "$DEPLOY_PORT" "$SSH_TARGET" "chmod +x '$DEPLOY_ROOT/scripts/deploy/remote-deploy-staging.sh' && DEPLOY_ROOT='$DEPLOY_ROOT' '$DEPLOY_ROOT/scripts/deploy/remote-deploy-staging.sh'"
 
-      - name: Verify staging health
+      - name: Verify staging health on droplet
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_ROOT: ${{ secrets.DEPLOY_ROOT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          DEPLOY_PORT="${DEPLOY_PORT:-22}"
+          DEPLOY_ROOT="${DEPLOY_ROOT:-/opt/houseplan-staging}"
+          SSH_TARGET="${DEPLOY_USER}@${DEPLOY_HOST}"
+          ssh -p "$DEPLOY_PORT" "$SSH_TARGET" "\
+            cd '$DEPLOY_ROOT' && \
+            docker compose -f docker-compose.staging.yml ps && \
+            docker compose -f docker-compose.staging.yml logs --tail=120 web && \
+            curl --fail --silent --show-error --retry 12 --retry-delay 5 http://127.0.0.1:3001/api/health \
+          "
+
+      - name: Verify staging health publicly
         run: curl --fail --silent --show-error --retry 10 --retry-delay 5 --retry-connrefused "http://${{ secrets.STAGING_HOST }}:3001/api/health"
