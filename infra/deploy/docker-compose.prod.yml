@@ -1,6 +1,6 @@
 services:
   traefik:
-    image: traefik:v3.3
+    image: traefik:v3.6.11
     container_name: houseplan-traefik
     command:
       - --providers.docker=true
