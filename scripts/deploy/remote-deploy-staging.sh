@@ -36,7 +36,9 @@ done
 
 cd "${DEPLOY_ROOT}"
 
-mkdir -p infra/livekit scripts/deploy
+mkdir -p infra/livekit scripts/deploy traefik
+touch traefik/acme.json
+chmod 600 traefik/acme.json
 
 echo "${GHCR_TOKEN}" | docker login ghcr.io -u "${GHCR_USERNAME}" --password-stdin
 
@@ -44,6 +46,6 @@ echo "[staging] resetting existing containers and volumes"
 docker compose -f docker-compose.staging.yml down -v || true
 
 docker compose --profile jobs -f docker-compose.staging.yml pull
-docker compose -f docker-compose.staging.yml up -d spacetimedb redis livekit web
+docker compose -f docker-compose.staging.yml up -d traefik redis spacetimedb livekit web
 docker compose --profile jobs -f docker-compose.staging.yml run --rm spacetime-publisher
 docker compose -f docker-compose.staging.yml ps

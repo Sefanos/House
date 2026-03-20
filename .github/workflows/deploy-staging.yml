@@ -15,32 +15,24 @@ jobs:
       contents: read
       packages: write
     outputs:
-      normalized_host: ${{ steps.normalize-host.outputs.normalized_host }}
       web_image: ${{ steps.images.outputs.web_image }}
       spacetime_publisher_image: ${{ steps.images.outputs.spacetime_publisher_image }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Normalize staging host
-        id: normalize-host
+      - name: Validate staging domain configuration
         env:
-          STAGING_HOST_RAW: ${{ secrets.STAGING_HOST }}
+          APP_DOMAIN: ${{ secrets.APP_DOMAIN }}
+          SPACETIME_DOMAIN: ${{ secrets.SPACETIME_DOMAIN }}
+          LIVEKIT_DOMAIN: ${{ secrets.LIVEKIT_DOMAIN }}
         run: |
-          host="${STAGING_HOST_RAW}"
-          host="${host#http://}"
-          host="${host#https://}"
-          host="${host#ws://}"
-          host="${host#wss://}"
-          host="${host%%/*}"
-          host="${host%%:*}"
-
-          if [ -z "$host" ]; then
-            echo "STAGING_HOST must contain a valid IP or hostname." >&2
-            exit 1
-          fi
-
-          echo "normalized_host=$host" >> "$GITHUB_OUTPUT"
+          for var_name in APP_DOMAIN SPACETIME_DOMAIN LIVEKIT_DOMAIN; do
+            if [ -z "${!var_name}" ]; then
+              echo "Missing required staging secret: ${var_name}" >&2
+              exit 1
+            fi
+          done
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -72,9 +64,9 @@ jobs:
             ${{ steps.images.outputs.web_image }}
             ${{ steps.images.outputs.web_latest }}
           build-args: |
-            NEXT_PUBLIC_SPACETIME_URL=ws://${{ steps.normalize-host.outputs.normalized_host }}:3000
+            NEXT_PUBLIC_SPACETIME_URL=wss://${{ secrets.SPACETIME_DOMAIN }}
             NEXT_PUBLIC_SPACETIME_MODULE=${{ vars.SPACETIME_MODULE_NAME || 'houseplan' }}
-            NEXT_PUBLIC_LIVEKIT_URL=ws://${{ steps.normalize-host.outputs.normalized_host }}:7880
+            NEXT_PUBLIC_LIVEKIT_URL=wss://${{ secrets.LIVEKIT_DOMAIN }}
             NEXT_PUBLIC_GIPHY_API_KEY=${{ vars.NEXT_PUBLIC_GIPHY_API_KEY }}
 
       - name: Build and push Spacetime publisher image
@@ -121,25 +113,19 @@ jobs:
               ;;
           esac
 
-      - name: Normalize staging host
-        id: normalize-host
+      - name: Validate staging domain configuration
         env:
-          STAGING_HOST_RAW: ${{ secrets.STAGING_HOST }}
+          APP_DOMAIN: ${{ secrets.APP_DOMAIN }}
+          SPACETIME_DOMAIN: ${{ secrets.SPACETIME_DOMAIN }}
+          LIVEKIT_DOMAIN: ${{ secrets.LIVEKIT_DOMAIN }}
+          TRAEFIK_ACME_EMAIL: ${{ secrets.TRAEFIK_ACME_EMAIL }}
         run: |
-          host="${STAGING_HOST_RAW}"
-          host="${host#http://}"
-          host="${host#https://}"
-          host="${host#ws://}"
-          host="${host#wss://}"
-          host="${host%%/*}"
-          host="${host%%:*}"
-
-          if [ -z "$host" ]; then
-            echo "STAGING_HOST must contain a valid IP or hostname." >&2
-            exit 1
-          fi
-
-          echo "normalized_host=$host" >> "$GITHUB_OUTPUT"
+          for var_name in APP_DOMAIN SPACETIME_DOMAIN LIVEKIT_DOMAIN TRAEFIK_ACME_EMAIL; do
+            if [ -z "${!var_name}" ]; then
+              echo "Missing required staging secret: ${var_name}" >&2
+              exit 1
+            fi
+          done
 
       - name: Configure SSH
         env:
@@ -167,9 +153,12 @@ jobs:
         env:
           WEB_IMAGE: ${{ needs.build-and-push.outputs.web_image }}
           SPACETIME_PUBLISHER_IMAGE: ${{ needs.build-and-push.outputs.spacetime_publisher_image }}
-          STAGING_HOST: ${{ steps.normalize-host.outputs.normalized_host }}
           SPACETIME_MODULE_NAME: ${{ vars.SPACETIME_MODULE_NAME || 'houseplan' }}
           NEXT_PUBLIC_GIPHY_API_KEY: ${{ vars.NEXT_PUBLIC_GIPHY_API_KEY }}
+          APP_DOMAIN: ${{ secrets.APP_DOMAIN }}
+          SPACETIME_DOMAIN: ${{ secrets.SPACETIME_DOMAIN }}
+          LIVEKIT_DOMAIN: ${{ secrets.LIVEKIT_DOMAIN }}
+          TRAEFIK_ACME_EMAIL: ${{ secrets.TRAEFIK_ACME_EMAIL }}
           LIVEKIT_API_KEY: ${{ secrets.LIVEKIT_API_KEY }}
           LIVEKIT_API_SECRET: ${{ secrets.LIVEKIT_API_SECRET }}
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
@@ -193,10 +182,13 @@ jobs:
 
           env_lines = [
               ("COMPOSE_PROJECT_NAME", "houseplan-staging"),
-              ("STAGING_HOST", os.environ["STAGING_HOST"]),
-              ("NEXT_PUBLIC_SPACETIME_URL", f"ws://{os.environ['STAGING_HOST']}:3000"),
+              ("APP_DOMAIN", os.environ["APP_DOMAIN"]),
+              ("SPACETIME_DOMAIN", os.environ["SPACETIME_DOMAIN"]),
+              ("LIVEKIT_DOMAIN", os.environ["LIVEKIT_DOMAIN"]),
+              ("TRAEFIK_ACME_EMAIL", os.environ["TRAEFIK_ACME_EMAIL"]),
+              ("NEXT_PUBLIC_SPACETIME_URL", f"wss://{os.environ['SPACETIME_DOMAIN']}"),
               ("NEXT_PUBLIC_SPACETIME_MODULE", os.environ["SPACETIME_MODULE_NAME"]),
-              ("NEXT_PUBLIC_LIVEKIT_URL", f"ws://{os.environ['STAGING_HOST']}:7880"),
+              ("NEXT_PUBLIC_LIVEKIT_URL", f"wss://{os.environ['LIVEKIT_DOMAIN']}"),
               ("NEXT_PUBLIC_GIPHY_API_KEY", os.environ.get("NEXT_PUBLIC_GIPHY_API_KEY", "")),
               ("LIVEKIT_API_KEY", os.environ["LIVEKIT_API_KEY"]),
               ("LIVEKIT_API_SECRET", os.environ["LIVEKIT_API_SECRET"]),
@@ -282,9 +274,8 @@ jobs:
           ssh -p "$DEPLOY_PORT" "$SSH_TARGET" "\
             cd '$DEPLOY_ROOT' && \
             docker compose -f docker-compose.staging.yml ps && \
-            docker compose -f docker-compose.staging.yml logs --tail=120 web && \
-            curl --fail --silent --show-error --retry 12 --retry-delay 5 http://127.0.0.1:3001/api/health \
+            docker compose -f docker-compose.staging.yml logs --tail=120 traefik web \
           "
 
       - name: Verify staging health publicly
-        run: curl --fail --silent --show-error --retry 10 --retry-delay 5 --retry-connrefused "http://${{ steps.normalize-host.outputs.normalized_host }}:3001/api/health"
+        run: curl --fail --silent --show-error --retry 10 --retry-delay 5 --retry-connrefused "https://${{ secrets.APP_DOMAIN }}/api/health"
